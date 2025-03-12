@@ -1,97 +1,141 @@
-import pygame
-import random
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tower Defense Game</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
 
-# Initialize Pygame
-pygame.init()
+        #game-container {
+            display: flex;
+            border: 2px solid #333;
+        }
 
-# Screen dimensions
-WIDTH, HEIGHT = 800, 600
-screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Elemental Towers: Defense of the Ancients")
+        #game-canvas {
+            border-right: 2px solid #333;
+            background-color: #fff;
+        }
 
-# Colors
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (255, 0, 0)
-GREEN = (0, 255, 0)
-BLUE = (0, 0, 255)
+        #sidebar {
+            padding: 20px;
+            background-color: #ddd;
+        }
 
-# Game variables
-clock = pygame.time.Clock()
-FPS = 60
+        #sidebar h2 {
+            margin-top: 0;
+        }
 
-# Tower class
-class Tower:
-    def __init__(self, x, y, element):
-        self.x = x
-        self.y = y
-        self.element = element
-        self.range = 100
-        self.damage = 10
-        self.color = RED if element == "fire" else BLUE
+        .tower-btn {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
 
-    def draw(self, screen):
-        pygame.draw.circle(screen, self.color, (self.x, self.y), 20)
+        .tower-btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div id="game-container">
+        <canvas id="game-canvas" width="800" height="600"></canvas>
+        <div id="sidebar">
+            <h2>Towers</h2>
+            <button class="tower-btn" data-tower="basic-tower">Basic Tower</button>
+            <button class="tower-btn" data-tower="sniper-tower">Sniper Tower</button>
+            <button class="tower-btn" data-tower="cannon-tower">Cannon Tower</button>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('game-canvas');
+        const ctx = canvas.getContext('2d');
 
-    def attack(self, enemies):
-        for enemy in enemies:
-            if ((self.x - enemy.x) ** 2 + (self.y - enemy.y) ** 2) ** 0.5 <= self.range:
-                enemy.health -= self.damage
-                break
+        let towers = [];
+        let enemies = [];
+        let selectedTowerType = 'basic-tower';
 
-# Enemy class
-class Enemy:
-    def __init__(self, element):
-        self.x = 0
-        self.y = random.randint(50, HEIGHT - 50)
-        self.speed = 2
-        self.health = 50
-        self.element = element
-        self.color = GREEN if element == "earth" else BLUE
+        document.querySelectorAll('.tower-btn').forEach(button => {
+            button.addEventListener('click', () => {
+                selectedTowerType = button.getAttribute('data-tower');
+            });
+        });
 
-    def draw(self, screen):
-        pygame.draw.rect(screen, self.color, (self.x, self.y, 30, 30))
+        canvas.addEventListener('click', (e) => {
+            const x = e.offsetX;
+            const y = e.offsetY;
+            towers.push(new Tower(x, y, selectedTowerType));
+        });
 
-    def move(self):
-        self.x += self.speed
+        class Tower {
+            constructor(x, y, type) {
+                this.x = x;
+                this.y = y;
+                this.type = type;
+                this.range = 100;
+                this.damage = 10;
+                this.fireRate = 1;
+            }
 
-# Game objects
-towers = []
-enemies = []
-wave = 0
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 20, 0, Math.PI * 2);
+                ctx.fillStyle = 'blue';
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
 
-# Main game loop
-running = True
-while running:
-    clock.tick(FPS)
-    screen.fill(BLACK)
+        class Enemy {
+            constructor(x, y, speed) {
+                this.x = x;
+                this.y = y;
+                this.speed = speed;
+            }
 
-    # Event handling
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            x, y = pygame.mouse.get_pos()
-            towers.append(Tower(x, y, "fire"))  # Place a fire tower
+            update() {
+                this.x += this.speed;
+            }
 
-    # Spawn enemies
-    if random.randint(1, 100) < 5:
-        enemies.append(Enemy("earth"))
+            draw() {
+                ctx.beginPath();
+                ctx.rect(this.x, this.y, 20, 20);
+                ctx.fillStyle = 'red';
+                ctx.fill();
+                ctx.closePath();
+            }
+        }
 
-    # Update enemies
-    for enemy in enemies:
-        enemy.move()
-        enemy.draw(screen)
-        if enemy.x > WIDTH:
-            enemies.remove(enemy)
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    # Update towers
-    for tower in towers:
-        tower.draw(screen)
-        tower.attack(enemies)
+            towers.forEach(tower => {
+                tower.draw();
+            });
 
-    # Draw everything
-    pygame.display.flip()
+            enemies.forEach(enemy => {
+                enemy.update();
+                enemy.draw();
+            });
 
-# Quit Pygame
-pygame.quit()
+            requestAnimationFrame(gameLoop);
+        }
+
+        gameLoop();
+    </script>
+</body>
+</html>
