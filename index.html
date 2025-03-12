@@ -1,0 +1,97 @@
+import pygame
+import random
+
+# Initialize Pygame
+pygame.init()
+
+# Screen dimensions
+WIDTH, HEIGHT = 800, 600
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption("Elemental Towers: Defense of the Ancients")
+
+# Colors
+WHITE = (255, 255, 255)
+BLACK = (0, 0, 0)
+RED = (255, 0, 0)
+GREEN = (0, 255, 0)
+BLUE = (0, 0, 255)
+
+# Game variables
+clock = pygame.time.Clock()
+FPS = 60
+
+# Tower class
+class Tower:
+    def __init__(self, x, y, element):
+        self.x = x
+        self.y = y
+        self.element = element
+        self.range = 100
+        self.damage = 10
+        self.color = RED if element == "fire" else BLUE
+
+    def draw(self, screen):
+        pygame.draw.circle(screen, self.color, (self.x, self.y), 20)
+
+    def attack(self, enemies):
+        for enemy in enemies:
+            if ((self.x - enemy.x) ** 2 + (self.y - enemy.y) ** 2) ** 0.5 <= self.range:
+                enemy.health -= self.damage
+                break
+
+# Enemy class
+class Enemy:
+    def __init__(self, element):
+        self.x = 0
+        self.y = random.randint(50, HEIGHT - 50)
+        self.speed = 2
+        self.health = 50
+        self.element = element
+        self.color = GREEN if element == "earth" else BLUE
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, (self.x, self.y, 30, 30))
+
+    def move(self):
+        self.x += self.speed
+
+# Game objects
+towers = []
+enemies = []
+wave = 0
+
+# Main game loop
+running = True
+while running:
+    clock.tick(FPS)
+    screen.fill(BLACK)
+
+    # Event handling
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            x, y = pygame.mouse.get_pos()
+            towers.append(Tower(x, y, "fire"))  # Place a fire tower
+
+    # Spawn enemies
+    if random.randint(1, 100) < 5:
+        enemies.append(Enemy("earth"))
+
+    # Update enemies
+    for enemy in enemies:
+        enemy.move()
+        enemy.draw(screen)
+        if enemy.x > WIDTH:
+            enemies.remove(enemy)
+
+    # Update towers
+    for tower in towers:
+        tower.draw(screen)
+        tower.attack(enemies)
+
+    # Draw everything
+    pygame.display.flip()
+
+# Quit Pygame
+pygame.quit()
