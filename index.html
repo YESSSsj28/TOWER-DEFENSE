@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OpenAssistant Chat</title>
+    <title>YAI - Modern AI Chat</title>
     <style>
-        /* Add your CSS styles here */
+        /* Modern Design */
         body {
-            font-family: Arial, sans-serif;
-            background-color: #1a1a1a;
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
             color: #ffffff;
             display: flex;
             justify-content: center;
@@ -16,79 +16,182 @@
             height: 100vh;
             margin: 0;
         }
+
         .chat-container {
             width: 100%;
-            max-width: 600px;
+            max-width: 800px;
             background-color: #2d2d2d;
-            border-radius: 10px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
             overflow: hidden;
             display: flex;
             flex-direction: column;
+            animation: fadeIn 0.5s ease-in-out;
         }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .chat-header {
-            background-color: #333;
-            padding: 15px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
+            padding: 20px;
             text-align: center;
         }
+
+        .chat-header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .chat-header p {
+            margin: 5px 0 0;
+            font-size: 14px;
+            color: #ddd;
+        }
+
         .chat-box {
             flex: 1;
-            padding: 15px;
+            padding: 20px;
             overflow-y: auto;
             border-bottom: 1px solid #444;
         }
+
         .chat-input {
             display: flex;
-            padding: 10px;
+            padding: 15px;
             background-color: #333;
         }
+
         .chat-input input {
             flex: 1;
-            padding: 10px;
+            padding: 12px;
             border: none;
-            border-radius: 5px;
+            border-radius: 8px;
             background-color: #444;
             color: #fff;
             margin-right: 10px;
+            font-size: 16px;
         }
+
         .chat-input button {
-            padding: 10px 20px;
+            padding: 12px 24px;
             border: none;
-            border-radius: 5px;
-            background-color: #007bff;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
             color: #fff;
             cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s ease;
         }
+
+        .chat-input button:hover {
+            background: linear-gradient(135deg, #0056b3, #003366);
+        }
+
         .message {
-            margin-bottom: 15px;
+            margin-bottom: 20px;
             display: flex;
             flex-direction: column;
+            opacity: 0;
+            animation: fadeInMessage 0.5s ease-in-out forwards;
         }
+
+        @keyframes fadeInMessage {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
         .message.user {
             align-items: flex-end;
         }
+
         .message.ai {
             align-items: flex-start;
         }
+
         .message p {
-            padding: 10px;
-            border-radius: 10px;
-            max-width: 70%;
+            padding: 12px;
+            border-radius: 12px;
+            max-width: 80%;
+            line-height: 1.5;
+            margin: 5px 0;
         }
+
         .message.user p {
-            background-color: #007bff;
+            background: linear-gradient(135deg, #007bff, #0056b3);
             color: #fff;
         }
+
         .message.ai p {
-            background-color: #444;
+            background: #444;
             color: #fff;
+        }
+
+        .code-block {
+            background-color: #1e1e1e;
+            padding: 12px;
+            border-radius: 8px;
+            font-family: 'Courier New', Courier, monospace;
+            white-space: pre-wrap;
+            margin: 10px 0;
+            overflow-x: auto;
+            color: #fff;
+        }
+
+        .run-script-btn {
+            background: linear-gradient(135deg, #28a745, #218838);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 16px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background 0.3s ease;
+        }
+
+        .run-script-btn:hover {
+            background: linear-gradient(135deg, #218838, #1e7e34);
+        }
+
+        .error {
+            color: #ff4d4d;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        /* Typing animation for AI responses */
+        .typing {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            background: #fff;
+            border-radius: 50%;
+            margin: 0 2px;
+            animation: typing 1s infinite;
+        }
+
+        .typing:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 100% { opacity: 0; }
+            50% { opacity: 1; }
         }
     </style>
 </head>
 <body>
     <div class="chat-container">
         <div class="chat-header">
-            <h1>OpenAssistant Chat</h1>
+            <h1>YAI</h1>
+            <p>Your AI Assistant</p>
         </div>
         <div class="chat-box" id="chat-box">
             <!-- Chat messages will appear here -->
@@ -99,25 +202,94 @@
         </div>
     </div>
     <script>
+        const apiKey = "TxttVZm0IdKC0foRzyn2XXW5veE6Z1xAKUhHKNrB"; // Replace with your Cohere API key
         const chatBox = document.getElementById("chat-box");
         const userInput = document.getElementById("user-input");
         const sendBtn = document.getElementById("send-btn");
 
-        // Your Hugging Face API key
-        const apiKey = "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";
-
-        // Function to add a message to the chat box
-        function addMessage(role, content) {
+        // Add a message to the chat box
+        function addMessage(role, content, isError = false) {
             const messageDiv = document.createElement("div");
             messageDiv.classList.add("message", role);
+
             const messageContent = document.createElement("p");
             messageContent.textContent = content;
             messageDiv.appendChild(messageContent);
+
+            if (isError) {
+                const errorText = document.createElement("div");
+                errorText.classList.add("error");
+                errorText.textContent = "Error: Unable to process the request.";
+                messageDiv.appendChild(errorText);
+            }
+
             chatBox.appendChild(messageDiv);
             chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to the bottom
         }
 
-        // Function to send a message to OpenAssistant
+        // Add a typing animation for AI responses
+        function showTypingAnimation() {
+            const typingDiv = document.createElement("div");
+            typingDiv.classList.add("message", "ai");
+            typingDiv.innerHTML = `
+                <p>
+                    <span class="typing"></span>
+                    <span class="typing"></span>
+                    <span class="typing"></span>
+                </p>
+            `;
+            chatBox.appendChild(typingDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+            return typingDiv;
+        }
+
+        // Remove the typing animation
+        function removeTypingAnimation(typingDiv) {
+            typingDiv.remove();
+        }
+
+        // Add a script block to the chat box
+        function addScriptBlock(code, explanation = "") {
+            if (explanation) {
+                const explanationDiv = document.createElement("div");
+                explanationDiv.classList.add("message", "ai");
+                const explanationContent = document.createElement("p");
+                explanationContent.textContent = explanation;
+                explanationDiv.appendChild(explanationContent);
+                chatBox.appendChild(explanationDiv);
+            }
+
+            const scriptDiv = document.createElement("div");
+            scriptDiv.classList.add("code-block");
+            scriptDiv.textContent = code;
+
+            const runButton = document.createElement("button");
+            runButton.classList.add("run-script-btn");
+            runButton.textContent = "Run Script";
+            runButton.addEventListener("click", () => {
+                try {
+                    // Validate the script before execution
+                    if (code.trim().startsWith("function") || code.includes("console.log")) {
+                        eval(code); // Execute the script
+                    } else {
+                        throw new Error("Invalid script format.");
+                    }
+                } catch (error) {
+                    console.error("Script Error:", error);
+                    addMessage("ai", `Script Error: ${error.message}`, true);
+                }
+            });
+
+            const messageDiv = document.createElement("div");
+            messageDiv.classList.add("message", "ai");
+            messageDiv.appendChild(scriptDiv);
+            messageDiv.appendChild(runButton);
+
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to the bottom
+        }
+
+        // Send a message to the AI
         async function sendMessage() {
             const userMessage = userInput.value.trim();
             if (!userMessage) return;
@@ -125,39 +297,53 @@
             addMessage("user", userMessage);
             userInput.value = ""; // Clear input field
 
+            // Show typing animation
+            const typingDiv = showTypingAnimation();
+
             try {
-                const response = await fetch(
-                    "https://api-inference.huggingface.co/models/OpenAssistant/oasst-sft-4-pythia-12b-epoch-3.5",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json",
-                            "Authorization": `Bearer ${apiKey}`
-                        },
-                        body: JSON.stringify({
-                            inputs: userMessage
-                        })
-                    }
-                );
+                // Determine if the user is asking for code
+                const isCodeRequest = userMessage.toLowerCase().includes("write code") ||
+                                      userMessage.toLowerCase().includes("function") ||
+                                      userMessage.toLowerCase().includes("script") ||
+                                      userMessage.toLowerCase().includes("javascript");
+
+                // Call the Cohere API
+                const response = await fetch("https://api.cohere.ai/v1/generate", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${apiKey}`
+                    },
+                    body: JSON.stringify({
+                        model: "command",
+                        prompt: isCodeRequest
+                            ? `Generate clean, error-free JavaScript code for: ${userMessage}. Provide only the code, no explanations.`
+                            : userMessage,
+                        max_tokens: 200,
+                        temperature: 0.7
+                    })
+                });
 
                 if (!response.ok) {
-                    const errorData = await response.json();
-                    console.error("API Error:", errorData);
                     throw new Error(`API request failed with status ${response.status}`);
                 }
 
                 const data = await response.json();
-                console.log("API Response:", data); // Log the API response
-                
-                // Check if data is an array and contains at least one item
-                if (Array.isArray(data) && data.length > 0 && data[0].generated_text) {
-                    addMessage("ai", data[0].generated_text);
+                const aiMessage = data.generations[0].text.trim();
+
+                // Remove typing animation
+                removeTypingAnimation(typingDiv);
+
+                // Check if the response is a script
+                if (isCodeRequest && (aiMessage.includes("function") || aiMessage.includes("console.log"))) {
+                    addScriptBlock(aiMessage, "Here's the code you requested:");
                 } else {
-                    addMessage("ai", "Sorry, I couldn't generate a response.");
+                    addMessage("ai", aiMessage); // Add as a regular message
                 }
             } catch (error) {
                 console.error("Error:", error);
-                addMessage("ai", "Sorry, something went wrong. Please try again.");
+                removeTypingAnimation(typingDiv);
+                addMessage("ai", "An error occurred while processing your request.", true);
             }
         }
 
