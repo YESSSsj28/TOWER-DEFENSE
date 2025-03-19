@@ -233,6 +233,7 @@
 
         let isAiResponding = false;
         let abortController = null;
+        let conversationHistory = []; // Store conversation history
 
         // Add a message to the chat box
         function addMessage(role, content, isError = false) {
@@ -276,16 +277,7 @@
         }
 
         // Add a script block to the chat box
-        function addScriptBlock(code, explanation = "") {
-            if (explanation) {
-                const explanationDiv = document.createElement("div");
-                explanationDiv.classList.add("message", "ai");
-                const explanationContent = document.createElement("p");
-                explanationContent.textContent = explanation;
-                explanationDiv.appendChild(explanationContent);
-                chatBox.appendChild(explanationDiv);
-            }
-
+        function addScriptBlock(code) {
             const scriptDiv = document.createElement("div");
             scriptDiv.classList.add("code-block");
             scriptDiv.textContent = code;
@@ -316,6 +308,36 @@
             chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to the bottom
         }
 
+        // Handle specific user questions
+        function handleSpecificQuestions(userMessage) {
+            const lowerCaseMessage = userMessage.toLowerCase();
+
+            if (lowerCaseMessage.includes("who made you") || lowerCaseMessage.includes("who founded you") || lowerCaseMessage.includes("who r u")) {
+                return "Yug";
+            } else if (lowerCaseMessage.includes("who are you")) {
+                return "YAI";
+            } else if (lowerCaseMessage.includes("how's your day") || lowerCaseMessage.includes("how are you")) {
+                return "I'm an AI, I can't respond. Just say good.";
+            }
+
+            return null;
+        }
+
+        // Validate code before sending
+        function validateCode(code) {
+            try {
+                // Attempt to parse the code
+                if (code.trim().startsWith("function") || code.includes("console.log")) {
+                    return true;
+                } else {
+                    throw new Error("Invalid script format.");
+                }
+            } catch (error) {
+                console.error("Code Validation Error:", error);
+                return false;
+            }
+        }
+
         // Send a message to the AI
         async function sendMessage() {
             const userMessage = userInput.value.trim();
@@ -333,7 +355,18 @@
             // Show typing animation
             const typingDiv = showTypingAnimation();
 
+            // Add user message to conversation history
+            conversationHistory.push({ role: "user", message: userMessage });
+
             try {
+                // Handle specific questions
+                const specificResponse = handleSpecificQuestions(userMessage);
+                if (specificResponse) {
+                    removeTypingAnimation(typingDiv);
+                    addMessage("ai", specificResponse);
+                    return;
+                }
+
                 // Determine if the user is asking for code
                 const isCodeRequest = userMessage.toLowerCase().includes("write code") ||
                                       userMessage.toLowerCase().includes("function") ||
@@ -342,6 +375,11 @@
 
                 // Create an AbortController to allow stopping the AI
                 abortController = new AbortController();
+
+                // Add a delay if it's a code request to "think"
+                if (isCodeRequest) {
+                    await new Promise(resolve => setTimeout(resolve, 2000)); // 2-second delay
+                }
 
                 // Call the Cohere API
                 const response = await fetch("https://api.cohere.ai/v1/generate", {
@@ -356,7 +394,8 @@
                             ? `Generate clean, error-free JavaScript code for: ${userMessage}. Provide only the code, no explanations.`
                             : userMessage,
                         max_tokens: 200,
-                        temperature: 0.7
+                        temperature: 0.7,
+                        chat_history: conversationHistory // Include conversation history
                     }),
                     signal: abortController.signal
                 });
@@ -371,9 +410,17 @@
                 // Remove typing animation
                 removeTypingAnimation(typingDiv);
 
+                // Add AI response to conversation history
+                conversationHistory.push({ role: "ai", message: aiMessage });
+
                 // Check if the response is a script
                 if (isCodeRequest && (aiMessage.includes("function") || aiMessage.includes("console.log"))) {
-                    addScriptBlock(aiMessage, "Here's the code you requested:");
+                    // Validate the code before displaying it
+                    if (validateCode(aiMessage)) {
+                        addScriptBlock(aiMessage);
+                    } else {
+                        addMessage("ai", "The generated code is invalid. Please try again.", true);
+                    }
                 } else {
                     addMessage("ai", aiMessage); // Add as a regular message
                 }
