@@ -2,16 +2,28 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Roblox Rivals Arena - With Collisions</title>
+    <title>Roblox Rivals Arena - Hidden Spawn</title>
     <style>
         body { 
             margin: 0; 
             overflow: hidden; 
             font-family: Arial, sans-serif;
         }
+        #instructions {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            background: rgba(0,0,0,0.7);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
+    <div id="instructions">Click to play | WASD to move | SPACE to jump</div>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/build/three.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/three@0.132.2/examples/js/controls/PointerLockControls.js"></script>
     <script>
@@ -19,9 +31,13 @@
         const scene = new THREE.Scene();
         scene.background = new THREE.Color(0x87CEEB);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.set(-30, 5, 0);
+        
+        // SPAWN POSITION (behind left pillar)
+        const spawnPosition = { x: -65, y: 5, z: -20 };
+        camera.position.set(spawnPosition.x, spawnPosition.y, spawnPosition.z);
+        
         const renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setSize(window.innerWidth / window.innerHeight);
         renderer.shadowMap.enabled = true;
         document.body.appendChild(renderer.domElement);
 
@@ -34,30 +50,37 @@
         directionalLight.castShadow = true;
         scene.add(directionalLight);
 
-        // ===== COLLISION OBJECTS =====
+        // ===== COLLISION SYSTEM =====
         const collidableObjects = [];
         const wallMaterial = new THREE.MeshStandardMaterial({ 
             color: 0x444444,
             transparent: true,
-            opacity: 0.5
+            opacity: 0.7
         });
 
+        // Player collider properties
+        const playerCollider = {
+            radius: 0.8,
+            height: 1.8,
+            position: new THREE.Vector3()
+        };
+
         // ===== ARENA CONSTRUCTION =====
-        // Main floor (80x80)
-        const floorSize = 80;
-        const floorGeometry = new THREE.BoxGeometry(floorSize, 1, floorSize);
-        const floor = new THREE.Mesh(floorGeometry, new THREE.MeshStandardMaterial({ 
-            color: 0x555555,
-            roughness: 0.7
-        }));
+        const floorSize = 160; // Large arena size
+        
+        // Main floor
+        const floor = new THREE.Mesh(
+            new THREE.BoxGeometry(floorSize, 1, floorSize),
+            new THREE.MeshStandardMaterial({ color: 0x555555, roughness: 0.7 })
+        );
         floor.position.y = -0.5;
         floor.receiveShadow = true;
         scene.add(floor);
         collidableObjects.push(floor);
 
         // Central big pillar
-        const bigPillarSize = 10;
-        const bigPillarHeight = 20;
+        const bigPillarSize = 20;
+        const bigPillarHeight = 40;
         const bigPillar = new THREE.Mesh(
             new THREE.BoxGeometry(bigPillarSize, bigPillarHeight, bigPillarSize),
             wallMaterial
@@ -69,7 +92,7 @@
 
         // Platform on top of big pillar
         const bigPlatform = new THREE.Mesh(
-            new THREE.BoxGeometry(bigPillarSize + 4, 1, bigPillarSize + 4),
+            new THREE.BoxGeometry(bigPillarSize + 8, 2, bigPillarSize + 8),
             wallMaterial
         );
         bigPlatform.position.set(0, bigPillarHeight, 0);
@@ -77,23 +100,23 @@
         scene.add(bigPlatform);
         collidableObjects.push(bigPlatform);
 
-        // Ramp to big pillar (from small pillar)
+        // Ramp to big pillar
         const bigPillarRamp = new THREE.Mesh(
-            new THREE.BoxGeometry(8, 1, 12),
+            new THREE.BoxGeometry(16, 2, 24),
             wallMaterial
         );
-        bigPillarRamp.position.set(0, bigPillarHeight/2 + 5, bigPillarSize/2 + 6);
+        bigPillarRamp.position.set(0, bigPillarHeight/2 + 10, bigPillarSize/2 + 12);
         bigPillarRamp.rotation.x = -Math.PI/4;
         bigPillarRamp.receiveShadow = true;
         scene.add(bigPillarRamp);
         collidableObjects.push(bigPillarRamp);
 
         // Small pillars
-        const smallPillarHeight = 10;
-        const smallPillarSize = 6;
+        const smallPillarHeight = 20;
+        const smallPillarSize = 12;
         const smallPillarPositions = [
-            { x: -25, z: 0 },
-            { x: 25, z: 0 }
+            { x: -50, z: 0 }, // Left pillar
+            { x: 50, z: 0 }    // Right pillar
         ];
 
         smallPillarPositions.forEach(pos => {
@@ -109,7 +132,7 @@
 
             // Platform on small pillar
             const smallPlatform = new THREE.Mesh(
-                new THREE.BoxGeometry(smallPillarSize + 2, 1, smallPillarSize + 2),
+                new THREE.BoxGeometry(smallPillarSize + 4, 2, smallPillarSize + 4),
                 wallMaterial
             );
             smallPlatform.position.set(pos.x, smallPillarHeight, pos.z);
@@ -119,37 +142,19 @@
 
             // Ramp to small pillar
             const smallPillarRamp = new THREE.Mesh(
-                new THREE.BoxGeometry(5, 1, 15),
+                new THREE.BoxGeometry(10, 2, 30),
                 wallMaterial
             );
-            smallPillarRamp.position.set(pos.x, smallPillarHeight/2 - 2.5, pos.z > 0 ? pos.z - 7.5 : pos.z + 7.5);
+            smallPillarRamp.position.set(pos.x, smallPillarHeight/2 - 5, pos.z > 0 ? pos.z - 15 : pos.z + 15);
             smallPillarRamp.rotation.x = pos.z > 0 ? Math.PI/4 : -Math.PI/4;
             smallPillarRamp.receiveShadow = true;
             scene.add(smallPillarRamp);
             collidableObjects.push(smallPillarRamp);
         });
 
-        // Spawn ramps
-        const spawnRampPositions = [
-            { x: -30, z: 0, rotation: Math.PI/4 },
-            { x: 30, z: 0, rotation: -Math.PI/4 }
-        ];
-
-        spawnRampPositions.forEach(pos => {
-            const spawnRamp = new THREE.Mesh(
-                new THREE.BoxGeometry(5, 1, 15),
-                wallMaterial
-            );
-            spawnRamp.position.set(pos.x, 2.5, pos.z);
-            spawnRamp.rotation.x = pos.rotation;
-            spawnRamp.receiveShadow = true;
-            scene.add(spawnRamp);
-            collidableObjects.push(spawnRamp);
-        });
-
         // Boundary walls
-        const wallHeight = 20;
-        const wallGeometry = new THREE.BoxGeometry(floorSize, wallHeight, 1);
+        const wallHeight = 40;
+        const wallGeometry = new THREE.BoxGeometry(floorSize, wallHeight, 2);
         
         for (let i = 0; i < 4; i++) {
             const wall = new THREE.Mesh(wallGeometry, wallMaterial);
@@ -172,13 +177,8 @@
             collidableObjects.push(wall);
         }
 
-        // ===== PLAYER CONTROLS & COLLISION =====
+        // ===== PLAYER CONTROLS =====
         const controls = new THREE.PointerLockControls(camera, document.body);
-        const playerCollider = {
-            radius: 0.5,
-            height: 1.8,
-            position: new THREE.Vector3()
-        };
         
         const movement = {
             forward: false,
@@ -191,17 +191,28 @@
         };
         
         // Key bindings
+        const keysPressed = {};
         document.addEventListener('keydown', (e) => {
+            keysPressed[e.code] = true;
+            
             switch(e.code) {
                 case 'KeyW': movement.forward = true; break;
                 case 'KeyS': movement.backward = true; break;
                 case 'KeyA': movement.left = true; break;
                 case 'KeyD': movement.right = true; break;
-                case 'Space': movement.jump = true; break;
+                case 'Space': 
+                    if (movement.isGrounded) {
+                        movement.jump = true; 
+                        movement.velocityY = 0.25;
+                        movement.isGrounded = false;
+                    }
+                    break;
             }
         });
         
         document.addEventListener('keyup', (e) => {
+            keysPressed[e.code] = false;
+            
             switch(e.code) {
                 case 'KeyW': movement.forward = false; break;
                 case 'KeyS': movement.backward = false; break;
@@ -211,13 +222,17 @@
             }
         });
 
+        // Pointer lock controls
         document.addEventListener('click', () => {
-            controls.lock();
+            if (!controls.isLocked) {
+                controls.lock();
+                document.getElementById('instructions').style.display = 'none';
+            }
         });
 
         // ===== COLLISION DETECTION =====
-        function checkCollisions(newPosition) {
-            playerCollider.position.copy(newPosition);
+        function checkCollisions(newPos) {
+            playerCollider.position.copy(newPos);
             
             for (const object of collidableObjects) {
                 if (object.geometry.type === 'BoxGeometry') {
@@ -228,11 +243,13 @@
                     const boxPos = new THREE.Vector3();
                     object.getWorldPosition(boxPos);
                     
-                    // Simple AABB collision check
-                    if (Math.abs(playerCollider.position.x - boxPos.x) < boxSize.x/2 + playerCollider.radius &&
-                        Math.abs(playerCollider.position.z - boxPos.z) < boxSize.z/2 + playerCollider.radius &&
-                        playerCollider.position.y < boxPos.y + boxSize.y/2 &&
-                        playerCollider.position.y > boxPos.y - boxSize.y/2) {
+                    // AABB collision check
+                    const xCollision = Math.abs(playerCollider.position.x - boxPos.x) < (boxSize.x/2 + playerCollider.radius);
+                    const zCollision = Math.abs(playerCollider.position.z - boxPos.z) < (boxSize.z/2 + playerCollider.radius);
+                    const yCollision = playerCollider.position.y < (boxPos.y + boxSize.y/2) && 
+                                      playerCollider.position.y > (boxPos.y - boxSize.y/2);
+                    
+                    if (xCollision && zCollision && yCollision) {
                         return false; // Collision detected
                     }
                 }
@@ -240,15 +257,11 @@
             return true; // No collision
         }
 
-        // ===== PHYSICS =====
-        const gravity = 0.02;
-        const jumpForce = 0.2;
-        
+        // Ground check
         function checkGrounded() {
-            // Create a ray from player's feet
             const feetPosition = new THREE.Vector3(
                 camera.position.x,
-                camera.position.y - playerCollider.height/2,
+                camera.position.y - playerCollider.height/2 - 0.1,
                 camera.position.z
             );
             
@@ -261,10 +274,11 @@
                     const boxPos = new THREE.Vector3();
                     object.getWorldPosition(boxPos);
                     
-                    // Check if player is standing on a surface
-                    if (Math.abs(feetPosition.x - boxPos.x) < boxSize.x/2 + playerCollider.radius &&
-                        Math.abs(feetPosition.z - boxPos.z) < boxSize.z/2 + playerCollider.radius &&
-                        Math.abs(feetPosition.y - (boxPos.y + boxSize.y/2)) < 0.2) {
+                    const xInBounds = Math.abs(feetPosition.x - boxPos.x) < (boxSize.x/2 + playerCollider.radius);
+                    const zInBounds = Math.abs(feetPosition.z - boxPos.z) < (boxSize.z/2 + playerCollider.radius);
+                    const yOnSurface = Math.abs(feetPosition.y - (boxPos.y + boxSize.y/2)) < 0.5;
+                    
+                    if (xInBounds && zInBounds && yOnSurface) {
                         movement.isGrounded = true;
                         return;
                     }
@@ -272,6 +286,10 @@
             }
             movement.isGrounded = false;
         }
+
+        // ===== PHYSICS =====
+        const gravity = 0.03;
+        const moveSpeed = 0.2;
 
         // ===== GAME LOOP =====
         const clock = new THREE.Clock();
@@ -281,7 +299,6 @@
             
             if (controls.isLocked) {
                 // Calculate movement direction
-                const moveSpeed = 0.15;
                 const direction = new THREE.Vector3();
                 camera.getWorldDirection(direction);
                 direction.y = 0;
@@ -298,19 +315,13 @@
                     camera.position.z + moveZ
                 );
                 
-                // Apply movement if no collision
+                // Apply horizontal movement if no collision
                 if (checkCollisions(newPosition)) {
                     camera.position.x = newPosition.x;
                     camera.position.z = newPosition.z;
                 }
                 
-                // Jumping
-                checkGrounded();
-                if (movement.jump && movement.isGrounded) {
-                    movement.velocityY = jumpForce;
-                }
-                
-                // Apply gravity
+                // Apply gravity and jumping
                 movement.velocityY -= gravity;
                 
                 // Vertical movement with collision check
@@ -328,8 +339,11 @@
                     if (movement.velocityY < 0) movement.isGrounded = true;
                 }
                 
+                // Check if grounded
+                checkGrounded();
+                
                 // Keep player in bounds
-                const halfSize = floorSize/2 - 2;
+                const halfSize = floorSize/2 - 5;
                 camera.position.x = Math.max(-halfSize, Math.min(halfSize, camera.position.x));
                 camera.position.z = Math.max(-halfSize, Math.min(halfSize, camera.position.z));
             }
