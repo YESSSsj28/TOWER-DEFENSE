@@ -2,7 +2,7 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>Roblox Rivals Arena - Modified</title>
+    <title>Roblox Rivals Arena - With Collisions</title>
     <style>
         body { 
             margin: 0; 
@@ -17,9 +17,9 @@
     <script>
         // ===== GAME SETUP =====
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87CEEB); // Sky blue background
+        scene.background = new THREE.Color(0x87CEEB);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-        camera.position.y = 5;
+        camera.position.set(-30, 5, 0);
         const renderer = new THREE.WebGLRenderer({ antialias: true });
         renderer.setSize(window.innerWidth, window.innerHeight);
         renderer.shadowMap.enabled = true;
@@ -32,127 +32,162 @@
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
         directionalLight.position.set(0, 10, 5);
         directionalLight.castShadow = true;
-        directionalLight.shadow.mapSize.width = 1024;
-        directionalLight.shadow.mapSize.height = 1024;
         scene.add(directionalLight);
 
+        // ===== COLLISION OBJECTS =====
+        const collidableObjects = [];
+        const wallMaterial = new THREE.MeshStandardMaterial({ 
+            color: 0x444444,
+            transparent: true,
+            opacity: 0.5
+        });
+
         // ===== ARENA CONSTRUCTION =====
-        // Main floor (2x bigger)
+        // Main floor (80x80)
         const floorSize = 80;
         const floorGeometry = new THREE.BoxGeometry(floorSize, 1, floorSize);
-        const floorMaterial = new THREE.MeshStandardMaterial({ 
+        const floor = new THREE.Mesh(floorGeometry, new THREE.MeshStandardMaterial({ 
             color: 0x555555,
             roughness: 0.7
-        });
-        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        }));
         floor.position.y = -0.5;
         floor.receiveShadow = true;
         scene.add(floor);
+        collidableObjects.push(floor);
 
         // Central big pillar
         const bigPillarSize = 10;
         const bigPillarHeight = 20;
-        const bigPillarGeometry = new THREE.BoxGeometry(bigPillarSize, bigPillarHeight, bigPillarSize);
-        const bigPillarMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 });
-        const bigPillar = new THREE.Mesh(bigPillarGeometry, bigPillarMaterial);
+        const bigPillar = new THREE.Mesh(
+            new THREE.BoxGeometry(bigPillarSize, bigPillarHeight, bigPillarSize),
+            wallMaterial
+        );
         bigPillar.position.set(0, bigPillarHeight/2, 0);
         bigPillar.receiveShadow = true;
         scene.add(bigPillar);
+        collidableObjects.push(bigPillar);
 
         // Platform on top of big pillar
-        const bigPillarPlatformGeometry = new THREE.BoxGeometry(bigPillarSize + 4, 1, bigPillarSize + 4);
-        const bigPillarPlatform = new THREE.Mesh(bigPillarPlatformGeometry, bigPillarMaterial);
-        bigPillarPlatform.position.set(0, bigPillarHeight, 0);
-        bigPillarPlatform.receiveShadow = true;
-        scene.add(bigPillarPlatform);
+        const bigPlatform = new THREE.Mesh(
+            new THREE.BoxGeometry(bigPillarSize + 4, 1, bigPillarSize + 4),
+            wallMaterial
+        );
+        bigPlatform.position.set(0, bigPillarHeight, 0);
+        bigPlatform.receiveShadow = true;
+        scene.add(bigPlatform);
+        collidableObjects.push(bigPlatform);
 
-        // Small pillars (first jump)
+        // Ramp to big pillar (from small pillar)
+        const bigPillarRamp = new THREE.Mesh(
+            new THREE.BoxGeometry(8, 1, 12),
+            wallMaterial
+        );
+        bigPillarRamp.position.set(0, bigPillarHeight/2 + 5, bigPillarSize/2 + 6);
+        bigPillarRamp.rotation.x = -Math.PI/4;
+        bigPillarRamp.receiveShadow = true;
+        scene.add(bigPillarRamp);
+        collidableObjects.push(bigPillarRamp);
+
+        // Small pillars
         const smallPillarHeight = 10;
         const smallPillarSize = 6;
-        const smallPillarGeometry = new THREE.BoxGeometry(smallPillarSize, smallPillarHeight, smallPillarSize);
-        const smallPillarMaterial = new THREE.MeshStandardMaterial({ color: 0x777777 });
-
-        // Create two small pillars (one on each side)
         const smallPillarPositions = [
             { x: -25, z: 0 },
             { x: 25, z: 0 }
         ];
 
         smallPillarPositions.forEach(pos => {
-            const smallPillar = new THREE.Mesh(smallPillarGeometry, smallPillarMaterial);
+            // Small pillar
+            const smallPillar = new THREE.Mesh(
+                new THREE.BoxGeometry(smallPillarSize, smallPillarHeight, smallPillarSize),
+                wallMaterial
+            );
             smallPillar.position.set(pos.x, smallPillarHeight/2, pos.z);
             smallPillar.receiveShadow = true;
             scene.add(smallPillar);
+            collidableObjects.push(smallPillar);
 
-            // Platform on top of small pillar
+            // Platform on small pillar
             const smallPlatform = new THREE.Mesh(
                 new THREE.BoxGeometry(smallPillarSize + 2, 1, smallPillarSize + 2),
-                smallPillarMaterial
+                wallMaterial
             );
             smallPlatform.position.set(pos.x, smallPillarHeight, pos.z);
             smallPlatform.receiveShadow = true;
             scene.add(smallPlatform);
+            collidableObjects.push(smallPlatform);
+
+            // Ramp to small pillar
+            const smallPillarRamp = new THREE.Mesh(
+                new THREE.BoxGeometry(5, 1, 15),
+                wallMaterial
+            );
+            smallPillarRamp.position.set(pos.x, smallPillarHeight/2 - 2.5, pos.z > 0 ? pos.z - 7.5 : pos.z + 7.5);
+            smallPillarRamp.rotation.x = pos.z > 0 ? Math.PI/4 : -Math.PI/4;
+            smallPillarRamp.receiveShadow = true;
+            scene.add(smallPillarRamp);
+            collidableObjects.push(smallPillarRamp);
         });
 
-        // Spawn ramps (one on each side)
-        const rampLength = 15;
-        const rampGeometry = new THREE.BoxGeometry(5, 1, rampLength);
-        const rampMaterial = new THREE.MeshStandardMaterial({ color: 0x666666 });
-
-        const rampPositions = [
+        // Spawn ramps
+        const spawnRampPositions = [
             { x: -30, z: 0, rotation: Math.PI/4 },
             { x: 30, z: 0, rotation: -Math.PI/4 }
         ];
 
-        rampPositions.forEach(pos => {
-            const ramp = new THREE.Mesh(rampGeometry, rampMaterial);
-            ramp.position.set(pos.x, 2.5, pos.z);
-            ramp.rotation.x = pos.rotation;
-            ramp.receiveShadow = true;
-            scene.add(ramp);
+        spawnRampPositions.forEach(pos => {
+            const spawnRamp = new THREE.Mesh(
+                new THREE.BoxGeometry(5, 1, 15),
+                wallMaterial
+            );
+            spawnRamp.position.set(pos.x, 2.5, pos.z);
+            spawnRamp.rotation.x = pos.rotation;
+            spawnRamp.receiveShadow = true;
+            scene.add(spawnRamp);
+            collidableObjects.push(spawnRamp);
         });
 
         // Boundary walls
         const wallHeight = 20;
         const wallGeometry = new THREE.BoxGeometry(floorSize, wallHeight, 1);
-        const wallMaterial = new THREE.MeshStandardMaterial({ 
-            color: 0x444444,
-            transparent: true,
-            opacity: 0.5
-        });
         
-        // Create 4 boundary walls
         for (let i = 0; i < 4; i++) {
             const wall = new THREE.Mesh(wallGeometry, wallMaterial);
             wall.position.y = wallHeight/2;
             
             switch(i) {
-                case 0: wall.position.set(0, wall.position.y, -floorSize/2); break; // Front
-                case 1: wall.position.set(0, wall.position.y, floorSize/2); break; // Back
+                case 0: wall.position.set(0, wall.position.y, -floorSize/2); break;
+                case 1: wall.position.set(0, wall.position.y, floorSize/2); break;
                 case 2: 
                     wall.rotation.y = Math.PI/2; 
                     wall.position.set(-floorSize/2, wall.position.y, 0); 
-                    break; // Left
+                    break;
                 case 3: 
                     wall.rotation.y = Math.PI/2; 
                     wall.position.set(floorSize/2, wall.position.y, 0); 
-                    break; // Right
+                    break;
             }
             
             scene.add(wall);
+            collidableObjects.push(wall);
         }
 
-        // ===== PLAYER CONTROLS =====
+        // ===== PLAYER CONTROLS & COLLISION =====
         const controls = new THREE.PointerLockControls(camera, document.body);
+        const playerCollider = {
+            radius: 0.5,
+            height: 1.8,
+            position: new THREE.Vector3()
+        };
         
-        // Movement state
         const movement = {
             forward: false,
             backward: false,
             left: false,
             right: false,
             jump: false,
-            isGrounded: false
+            isGrounded: false,
+            velocityY: 0
         };
         
         // Key bindings
@@ -176,36 +211,66 @@
             }
         });
 
-        // Auto-lock pointer on click
         document.addEventListener('click', () => {
             controls.lock();
         });
 
+        // ===== COLLISION DETECTION =====
+        function checkCollisions(newPosition) {
+            playerCollider.position.copy(newPosition);
+            
+            for (const object of collidableObjects) {
+                if (object.geometry.type === 'BoxGeometry') {
+                    const boxSize = new THREE.Vector3();
+                    object.geometry.computeBoundingBox();
+                    object.geometry.boundingBox.getSize(boxSize);
+                    
+                    const boxPos = new THREE.Vector3();
+                    object.getWorldPosition(boxPos);
+                    
+                    // Simple AABB collision check
+                    if (Math.abs(playerCollider.position.x - boxPos.x) < boxSize.x/2 + playerCollider.radius &&
+                        Math.abs(playerCollider.position.z - boxPos.z) < boxSize.z/2 + playerCollider.radius &&
+                        playerCollider.position.y < boxPos.y + boxSize.y/2 &&
+                        playerCollider.position.y > boxPos.y - boxSize.y/2) {
+                        return false; // Collision detected
+                    }
+                }
+            }
+            return true; // No collision
+        }
+
         // ===== PHYSICS =====
         const gravity = 0.02;
-        let velocityY = 0;
-        const jumpForce = 0.2; // Increased jump force for platforming
+        const jumpForce = 0.2;
         
-        // Simple ground check
         function checkGrounded() {
-            // Check if player is on ground or any platform
-            movement.isGrounded = camera.position.y <= 5.1;
+            // Create a ray from player's feet
+            const feetPosition = new THREE.Vector3(
+                camera.position.x,
+                camera.position.y - playerCollider.height/2,
+                camera.position.z
+            );
             
-            // Check small pillars
-            smallPillarPositions.forEach(pos => {
-                if (Math.abs(camera.position.x - pos.x) < smallPillarSize/2 + 1 && 
-                    Math.abs(camera.position.z - pos.z) < smallPillarSize/2 + 1 &&
-                    Math.abs(camera.position.y - smallPillarHeight) < 1) {
-                    movement.isGrounded = true;
+            for (const object of collidableObjects) {
+                if (object.geometry.type === 'BoxGeometry') {
+                    const boxSize = new THREE.Vector3();
+                    object.geometry.computeBoundingBox();
+                    object.geometry.boundingBox.getSize(boxSize);
+                    
+                    const boxPos = new THREE.Vector3();
+                    object.getWorldPosition(boxPos);
+                    
+                    // Check if player is standing on a surface
+                    if (Math.abs(feetPosition.x - boxPos.x) < boxSize.x/2 + playerCollider.radius &&
+                        Math.abs(feetPosition.z - boxPos.z) < boxSize.z/2 + playerCollider.radius &&
+                        Math.abs(feetPosition.y - (boxPos.y + boxSize.y/2)) < 0.2) {
+                        movement.isGrounded = true;
+                        return;
+                    }
                 }
-            });
-            
-            // Check big pillar
-            if (Math.abs(camera.position.x) < bigPillarSize/2 + 1 && 
-                Math.abs(camera.position.z) < bigPillarSize/2 + 1 &&
-                Math.abs(camera.position.y - bigPillarHeight) < 1) {
-                movement.isGrounded = true;
             }
+            movement.isGrounded = false;
         }
 
         // ===== GAME LOOP =====
@@ -213,38 +278,60 @@
         
         function animate() {
             requestAnimationFrame(animate);
-            const delta = clock.getDelta();
             
             if (controls.isLocked) {
-                // Movement
+                // Calculate movement direction
                 const moveSpeed = 0.15;
+                const direction = new THREE.Vector3();
+                camera.getWorldDirection(direction);
+                direction.y = 0;
+                direction.normalize();
+                
+                // Calculate movement vector
                 const moveX = (movement.right ? moveSpeed : 0) + (movement.left ? -moveSpeed : 0);
                 const moveZ = (movement.forward ? -moveSpeed : 0) + (movement.backward ? moveSpeed : 0);
                 
-                // Apply movement
-                camera.position.x += moveX;
-                camera.position.z += moveZ;
+                // Create new position for collision check
+                const newPosition = new THREE.Vector3(
+                    camera.position.x + moveX,
+                    camera.position.y,
+                    camera.position.z + moveZ
+                );
+                
+                // Apply movement if no collision
+                if (checkCollisions(newPosition)) {
+                    camera.position.x = newPosition.x;
+                    camera.position.z = newPosition.z;
+                }
                 
                 // Jumping
                 checkGrounded();
                 if (movement.jump && movement.isGrounded) {
-                    velocityY = jumpForce;
+                    movement.velocityY = jumpForce;
                 }
                 
                 // Apply gravity
-                velocityY -= gravity;
-                camera.position.y += velocityY;
+                movement.velocityY -= gravity;
+                
+                // Vertical movement with collision check
+                const newYPosition = camera.position.y + movement.velocityY;
+                const verticalCheckPos = new THREE.Vector3(
+                    camera.position.x,
+                    newYPosition,
+                    camera.position.z
+                );
+                
+                if (checkCollisions(verticalCheckPos)) {
+                    camera.position.y = newYPosition;
+                } else {
+                    movement.velocityY = 0;
+                    if (movement.velocityY < 0) movement.isGrounded = true;
+                }
                 
                 // Keep player in bounds
                 const halfSize = floorSize/2 - 2;
                 camera.position.x = Math.max(-halfSize, Math.min(halfSize, camera.position.x));
                 camera.position.z = Math.max(-halfSize, Math.min(halfSize, camera.position.z));
-                
-                // Ground collision
-                if (camera.position.y < 5 && movement.isGrounded) {
-                    camera.position.y = 5;
-                    velocityY = 0;
-                }
             }
             
             renderer.render(scene, camera);
@@ -252,7 +339,7 @@
 
         animate();
 
-        // ===== WINDOW RESIZE =====
+        // Handle window resize
         window.addEventListener('resize', () => {
             camera.aspect = window.innerWidth / window.innerHeight;
             camera.updateProjectionMatrix();
