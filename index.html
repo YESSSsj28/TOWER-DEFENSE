@@ -1,558 +1,279 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>2D Fortnite-Style Battle Royale</title>
-    <style>
-        body { margin: 0; overflow: hidden; font-family: Arial; }
-        canvas { display: block; background: #222; }
-        #minimap { position: absolute; top: 10px; right: 10px; background: rgba(0,0,0,0.5); border: 2px solid white; }
-        #fullmap { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); display: none; }
-        .health-bar { position: absolute; bottom: 20px; left: 20px; color: white; }
-    </style>
-</head>
-<body>
-    <canvas id="gameCanvas" width="1200" height="1200"></canvas>
-    <canvas id="minimap" width="150" height="150"></canvas>
-    <canvas id="fullmap" width="1200" height="1200"></canvas>
-    <div class="health-bar">HEALTH: <span id="healthDisplay">100</span>%</div>
+<!-- Add this to your HTML (before </body>) -->
+<div class="modal" id="gambleModal">
+  <div class="modal-content">
+    <button class="close-modal" id="closeGambleModal">&times;</button>
+    <h3 class="modal-title">🎰 Casino Royale 🎰</h3>
+    
+    <div class="gamble-options">
+      <button class="gamble-btn" data-percent="10">Bet 10%</button>
+      <button class="gamble-btn" data-percent="25">Bet 25%</button>
+      <button class="gamble-btn" data-percent="50">Bet 50%</button>
+      <button class="gamble-btn" data-percent="100">ALL IN!</button>
+    </div>
+    
+    <div class="card-display" id="cardDisplay">
+      <div class="card" id="playerCard"></div>
+      <div class="vs">VS</div>
+      <div class="card" id="dealerCard"></div>
+    </div>
+    
+    <div class="gamble-result" id="gambleResult"></div>
+    <div class="gamble-stats">
+      <p>Current Bet: <span id="currentBet">0</span> coins</p>
+      <p>Potential Win: <span id="potentialWin">0</span> coins</p>
+    </div>
+  </div>
+</div>
 
-    <script>
-        // Main game canvas
-        const canvas = document.getElementById("gameCanvas");
-        const ctx = canvas.getContext("2d");
+<style>
+  /* Gambling Modal Styles */
+  .gamble-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin: 1.5rem 0;
+  }
+  
+  .gamble-btn {
+    background: linear-gradient(145deg, var(--neon-purple), var(--neon-pink));
+    color: white;
+    border: none;
+    padding: 1rem;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.2s;
+    font-family: 'Roboto Mono', monospace;
+    box-shadow: 0 0 15px rgba(211, 0, 197, 0.3);
+  }
+  
+  .gamble-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 25px rgba(211, 0, 197, 0.5);
+  }
+  
+  .gamble-btn:active {
+    transform: translateY(0);
+  }
+  
+  .card-display {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+    margin: 2rem 0;
+  }
+  
+  .card {
+    width: 80px;
+    height: 120px;
+    background: white;
+    border-radius: 8px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 2rem;
+    color: black;
+    font-weight: bold;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(255,255,255,0.9));
+    z-index: 1;
+  }
+  
+  .card span {
+    position: relative;
+    z-index: 2;
+  }
+  
+  .vs {
+    font-size: 1.5rem;
+    color: var(--neon-green);
+    font-weight: bold;
+  }
+  
+  .gamble-result {
+    text-align: center;
+    font-size: 1.2rem;
+    font-weight: bold;
+    min-height: 2rem;
+    margin: 1rem 0;
+  }
+  
+  .win {
+    color: var(--neon-green);
+    text-shadow: 0 0 10px var(--neon-green);
+  }
+  
+  .lose {
+    color: var(--neon-pink);
+    text-shadow: 0 0 10px var(--neon-pink);
+  }
+  
+  .gamble-stats {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 1rem;
+    border-radius: 8px;
+    margin-top: 1rem;
+    text-align: center;
+  }
+  
+  .gamble-stats p {
+    margin: 0.5rem 0;
+    color: var(--text-secondary);
+  }
+  
+  .gamble-stats span {
+    color: var(--neon-blue);
+    font-weight: bold;
+  }
+</style>
+
+<script>
+  // Add this to your JavaScript
+  // Gambling variables
+  let currentBetAmount = 0;
+  const cardValues = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
+  
+  // Add gamble button to top buttons (add this where you initialize other buttons)
+  function initGambleButton() {
+    const topButtons = document.querySelector('.top-buttons');
+    const gambleBtn = document.createElement('button');
+    gambleBtn.className = 'top-btn';
+    gambleBtn.id = 'gambleBtn';
+    gambleBtn.textContent = '🎰 Gamble';
+    topButtons.appendChild(gambleBtn);
+    
+    // Add event listeners
+    gambleBtn.addEventListener('click', () => {
+      document.getElementById("gambleModal").style.display = "flex";
+      updateGambleStats();
+    });
+    
+    document.getElementById('closeGambleModal').addEventListener('click', () => {
+      document.getElementById("gambleModal").style.display = "none";
+    });
+    
+    document.querySelectorAll('.gamble-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const percent = parseInt(this.dataset.percent);
+        placeBet(percent);
+      });
+    });
+  }
+  
+  function placeBet(percent) {
+    currentBetAmount = Math.floor(coins * (percent / 100));
+    
+    if (currentBetAmount <= 0) {
+      document.getElementById("gambleResult").textContent = "You don't have enough coins to bet!";
+      document.getElementById("gambleResult").className = "lose";
+      return;
+    }
+    
+    if (currentBetAmount > coins) {
+      currentBetAmount = coins;
+    }
+    
+    updateGambleStats();
+    playGame();
+  }
+  
+  function playGame() {
+    // Clear previous result
+    document.getElementById("gambleResult").textContent = "";
+    document.getElementById("gambleResult").className = "";
+    
+    // Get random cards
+    const playerCard = cardValues[Math.floor(Math.random() * cardValues.length)];
+    const dealerCard = cardValues[Math.floor(Math.random() * cardValues.length)];
+    
+    // Display cards with animation
+    const playerCardEl = document.getElementById("playerCard");
+    const dealerCardEl = document.getElementById("dealerCard");
+    
+    playerCardEl.innerHTML = '<span>?</span>';
+    dealerCardEl.innerHTML = '<span>?</span>';
+    
+    // Animate card reveal
+    setTimeout(() => {
+      playerCardEl.innerHTML = `<span>${playerCard}</span>`;
+      
+      setTimeout(() => {
+        dealerCardEl.innerHTML = `<span>${dealerCard}</span>`;
         
-        // Map canvases
-        const minimap = document.getElementById("minimap");
-        const minimapCtx = minimap.getContext("2d");
-        const fullmap = document.getElementById("fullmap");
-        const fullmapCtx = fullmap.getContext("2d");
-        
-        // Game state
-        const game = {
-            viewX: 0,
-            viewY: 0,
-            mapSize: 2400,
-            showFullMap: false,
-            weapons: [
-                { name: "Pistol", damage: 10, range: 200, ammo: 12, color: "#777" },
-                { name: "Shotgun", damage: 25, range: 100, ammo: 6, color: "#964B00" },
-                { name: "Rifle", damage: 15, range: 300, ammo: 30, color: "#555" }
-            ]
-        };
-
-        // Player
-        const player = {
-            x: 1200,
-            y: 1200,
-            size: 20,
-            speed: 5,
-            health: 100,
-            color: "#00FF00",
-            weapon: 0,
-            ammo: 12,
-            direction: 0,
-            kills: 0
-        };
-
-        // Storm
-        const storm = {
-            x: 1200,
-            y: 1200,
-            radius: 1200,
-            shrinkSpeed: 0.5,
-            damage: 0.2,
-            nextShrink: 60000 // 1 minute
-        };
-
-        // Loot
-        const loot = [];
-        for (let i = 0; i < 50; i++) {
-            loot.push({
-                x: Math.random() * game.mapSize,
-                y: Math.random() * game.mapSize,
-                type: Math.random() > 0.3 ? "health" : "weapon",
-                value: Math.random() > 0.5 ? 20 : 50,
-                weapon: Math.floor(Math.random() * game.weapons.length),
-                collected: false
-            });
-        }
-
-        // Obstacles (Fortnite-style map)
-        const obstacles = [];
-        // Buildings
-        for (let i = 0; i < 15; i++) {
-            const size = 80 + Math.random() * 100;
-            obstacles.push({
-                x: Math.random() * game.mapSize,
-                y: Math.random() * game.mapSize,
-                width: size,
-                height: size,
-                type: "building"
-            });
-        }
-        // Trees
-        for (let i = 0; i < 50; i++) {
-            obstacles.push({
-                x: Math.random() * game.mapSize,
-                y: Math.random() * game.mapSize,
-                width: 30,
-                height: 60,
-                type: "tree"
-            });
-        }
-        // Rivers
-        for (let i = 0; i < 5; i++) {
-            const length = 300 + Math.random() * 500;
-            obstacles.push({
-                x: Math.random() * (game.mapSize - length),
-                y: Math.random() * (game.mapSize - 40),
-                width: length,
-                height: 40,
-                type: "river"
-            });
-        }
-
-        // Enemies (AI)
-        const enemies = [];
-        for (let i = 0; i < 10; i++) {
-            enemies.push({
-                x: Math.random() * game.mapSize,
-                y: Math.random() * game.mapSize,
-                size: 20,
-                speed: 1 + Math.random() * 2,
-                health: 100,
-                color: "#FF0000",
-                weapon: Math.floor(Math.random() * game.weapons.length),
-                ammo: 30,
-                direction: Math.random() * Math.PI * 2,
-                changeDirection: 0
-            });
-        }
-
-        // Bullets
-        const bullets = [];
-
-        // Keyboard controls
-        const keys = {};
-        document.addEventListener("keydown", (e) => {
-            keys[e.key.toLowerCase()] = true;
-            if (e.key === "m") game.showFullMap = !game.showFullMap;
-        });
-        document.addEventListener("keyup", (e) => keys[e.key.toLowerCase()] = false);
-
-        // Mouse controls
-        let mouseX = 0, mouseY = 0;
-        canvas.addEventListener("mousemove", (e) => {
-            const rect = canvas.getBoundingClientRect();
-            mouseX = e.clientX - rect.left + game.viewX;
-            mouseY = e.clientY - rect.top + game.viewY;
-        });
-        canvas.addEventListener("click", shoot);
-
-        // Game functions
-        function shoot() {
-            if (player.ammo <= 0) return;
-            
-            player.ammo--;
-            const weapon = game.weapons[player.weapon];
-            
-            // Calculate direction to mouse
-            const angle = Math.atan2(mouseY - player.y, mouseX - player.x);
-            
-            bullets.push({
-                x: player.x,
-                y: player.y,
-                dx: Math.cos(angle) * 10,
-                dy: Math.sin(angle) * 10,
-                range: weapon.range,
-                damage: weapon.damage,
-                color: weapon.color,
-                owner: "player"
-            });
-        }
-
-        function updateEnemyAI(enemy) {
-            // Simple AI: move randomly and shoot at player if visible
-            enemy.changeDirection--;
-            if (enemy.changeDirection <= 0) {
-                enemy.direction = Math.random() * Math.PI * 2;
-                enemy.changeDirection = 60 + Math.random() * 60;
-            }
-            
-            enemy.x += Math.cos(enemy.direction) * enemy.speed;
-            enemy.y += Math.sin(enemy.direction) * enemy.speed;
-            
-            // Keep in bounds
-            enemy.x = Math.max(0, Math.min(game.mapSize, enemy.x));
-            enemy.y = Math.max(0, Math.min(game.mapSize, enemy.y));
-            
-            // Shoot at player if in range
-            const distToPlayer = Math.sqrt((player.x - enemy.x)**2 + (player.y - enemy.y)**2);
-            if (distToPlayer < game.weapons[enemy.weapon].range && enemy.ammo > 0 && Math.random() > 0.9) {
-                enemy.ammo--;
-                const angle = Math.atan2(player.y - enemy.y, player.x - enemy.x);
-                bullets.push({
-                    x: enemy.x,
-                    y: enemy.y,
-                    dx: Math.cos(angle) * 8,
-                    dy: Math.sin(angle) * 8,
-                    range: game.weapons[enemy.weapon].range,
-                    damage: game.weapons[enemy.weapon].damage,
-                    color: game.weapons[enemy.weapon].color,
-                    owner: "enemy"
-                });
-            }
-        }
-
-        function checkCollision(x, y, size) {
-            // Check obstacle collisions
-            for (const obs of obstacles) {
-                if (x + size > obs.x && x - size < obs.x + obs.width &&
-                    y + size > obs.y && y - size < obs.y + obs.height) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        // Game loop
-        function gameLoop() {
-            // Update viewport to follow player
-            game.viewX = player.x - canvas.width/2;
-            game.viewY = player.y - canvas.height/2;
-            game.viewX = Math.max(0, Math.min(game.mapSize - canvas.width, game.viewX));
-            game.viewY = Math.max(0, Math.min(game.mapSize - canvas.height, game.viewY));
-            
-            // Clear screen
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw game world (visible area only)
-            ctx.save();
-            ctx.translate(-game.viewX, -game.viewY);
-            
-            // Draw storm
-            ctx.fillStyle = "rgba(100, 0, 200, 0.2)";
-            ctx.beginPath();
-            ctx.arc(storm.x, storm.y, storm.radius, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Draw obstacles
-            obstacles.forEach(obs => {
-                if (obs.type === "building") {
-                    ctx.fillStyle = "#888";
-                    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-                    // Windows
-                    ctx.fillStyle = "#ADD8E6";
-                    for (let wy = 0; wy < obs.height; wy += 40) {
-                        for (let wx = 0; wx < obs.width; wx += 40) {
-                            ctx.fillRect(obs.x + wx + 10, obs.y + wy + 10, 15, 15);
-                        }
-                    }
-                } else if (obs.type === "tree") {
-                    // Trunk
-                    ctx.fillStyle = "#5E2605";
-                    ctx.fillRect(obs.x + 10, obs.y + 20, 10, 40);
-                    // Leaves
-                    ctx.fillStyle = "#0A5C36";
-                    ctx.beginPath();
-                    ctx.arc(obs.x + 15, obs.y + 10, 20, 0, Math.PI * 2);
-                    ctx.fill();
-                } else if (obs.type === "river") {
-                    ctx.fillStyle = "#1E90FF";
-                    ctx.fillRect(obs.x, obs.y, obs.width, obs.height);
-                }
-            });
-            
-            // Draw loot
-            loot.forEach(item => {
-                if (!item.collected) {
-                    if (item.type === "health") {
-                        ctx.fillStyle = "#FF0000";
-                        ctx.beginPath();
-                        ctx.arc(item.x, item.y, 10, 0, Math.PI * 2);
-                        ctx.fill();
-                        // Plus sign
-                        ctx.fillStyle = "#FFFFFF";
-                        ctx.fillRect(item.x - 8, item.y - 2, 16, 4);
-                        ctx.fillRect(item.x - 2, item.y - 8, 4, 16);
-                    } else {
-                        ctx.fillStyle = game.weapons[item.weapon].color;
-                        ctx.fillRect(item.x - 10, item.y - 5, 20, 10);
-                    }
-                }
-            });
-            
-            // Draw enemies
-            enemies.forEach(enemy => {
-                if (enemy.health > 0) {
-                    ctx.fillStyle = enemy.color;
-                    ctx.beginPath();
-                    ctx.arc(enemy.x, enemy.y, enemy.size, 0, Math.PI * 2);
-                    ctx.fill();
-                    
-                    // Health bar
-                    ctx.fillStyle = "red";
-                    ctx.fillRect(enemy.x - 15, enemy.y - 25, 30, 3);
-                    ctx.fillStyle = "green";
-                    ctx.fillRect(enemy.x - 15, enemy.y - 25, (enemy.health / 100) * 30, 3);
-                }
-            });
-            
-            // Draw bullets
-            bullets.forEach((bullet, index) => {
-                bullet.x += bullet.dx;
-                bullet.y += bullet.dy;
-                bullet.range -= 10;
-                
-                ctx.fillStyle = bullet.color;
-                ctx.beginPath();
-                ctx.arc(bullet.x, bullet.y, 3, 0, Math.PI * 2);
-                ctx.fill();
-                
-                // Check bullet collisions
-                if (bullet.owner === "player") {
-                    enemies.forEach(enemy => {
-                        if (enemy.health > 0) {
-                            const dist = Math.sqrt((bullet.x - enemy.x)**2 + (bullet.y - enemy.y)**2);
-                            if (dist < enemy.size) {
-                                enemy.health -= bullet.damage;
-                                bullets.splice(index, 1);
-                                if (enemy.health <= 0) player.kills++;
-                            }
-                        }
-                    });
-                } else if (bullet.owner === "enemy") {
-                    const dist = Math.sqrt((bullet.x - player.x)**2 + (bullet.y - player.y)**2);
-                    if (dist < player.size) {
-                        player.health -= bullet.damage;
-                        bullets.splice(index, 1);
-                    }
-                }
-                
-                // Remove bullets that hit obstacles or exceed range
-                if (bullet.range <= 0 || checkCollision(bullet.x, bullet.y, 3)) {
-                    bullets.splice(index, 1);
-                }
-            });
-            
-            // Draw player
-            ctx.fillStyle = player.color;
-            ctx.beginPath();
-            ctx.arc(player.x, player.y, player.size, 0, Math.PI * 2);
-            ctx.fill();
-            
-            // Draw weapon
-            ctx.fillStyle = game.weapons[player.weapon].color;
-            ctx.fillRect(player.x + 15, player.y - 5, 20, 10);
-            
-            ctx.restore();
-            
-            // Update storm
-            storm.nextShrink--;
-            if (storm.nextShrink <= 0) {
-                storm.radius -= 100;
-                storm.nextShrink = 60000; // 1 minute
-            }
-            
-            // Check if player is outside storm
-            const distToStorm = Math.sqrt((player.x - storm.x)**2 + (player.y - storm.y)**2);
-            if (distToStorm > storm.radius) {
-                player.health -= storm.damage;
-            }
-            
-            // Player movement
-            let moveX = 0, moveY = 0;
-            if (keys["w"]) moveY -= player.speed;
-            if (keys["a"]) moveX -= player.speed;
-            if (keys["s"]) moveY += player.speed;
-            if (keys["d"]) moveX += player.speed;
-            
-            // Normalize diagonal movement
-            if (moveX !== 0 && moveY !== 0) {
-                moveX *= 0.7071;
-                moveY *= 0.7071;
-            }
-            
-            // Check collisions before moving
-            if (!checkCollision(player.x + moveX, player.y, player.size)) {
-                player.x += moveX;
-            }
-            if (!checkCollision(player.x, player.y + moveY, player.size)) {
-                player.y += moveY;
-            }
-            
-            // Keep player in bounds
-            player.x = Math.max(player.size, Math.min(game.mapSize - player.size, player.x));
-            player.y = Math.max(player.size, Math.min(game.mapSize - player.size, player.y));
-            
-            // Check loot collision
-            loot.forEach((item, index) => {
-                if (!item.collected) {
-                    const dist = Math.sqrt((player.x - item.x)**2 + (player.y - item.y)**2);
-                    if (dist < player.size + 10) {
-                        item.collected = true;
-                        if (item.type === "health") {
-                            player.health = Math.min(100, player.health + item.value);
-                        } else {
-                            player.weapon = item.weapon;
-                            player.ammo = game.weapons[item.weapon].ammo;
-                        }
-                    }
-                }
-            });
-            
-            // Update enemies
-            enemies.forEach(enemy => {
-                if (enemy.health > 0) {
-                    updateEnemyAI(enemy);
-                }
-            });
-            
-            // Update health display
-            document.getElementById("healthDisplay").textContent = Math.floor(player.health);
-            
-            // Draw minimap
-            drawMinimap();
-            
-            // Show full map if M is pressed
-            if (game.showFullMap) {
-                drawFullMap();
-                fullmap.style.display = "block";
-            } else {
-                fullmap.style.display = "none";
-            }
-            
-            // Game over check
-            if (player.health <= 0) {
-                ctx.fillStyle = "white";
-                ctx.font = "60px Arial";
-                ctx.textAlign = "center";
-                ctx.fillText("GAME OVER", canvas.width/2, canvas.height/2);
-                ctx.font = "30px Arial";
-                ctx.fillText(`Kills: ${player.kills}`, canvas.width/2, canvas.height/2 + 50);
-                return;
-            }
-            
-            requestAnimationFrame(gameLoop);
-        }
-
-        function drawMinimap() {
-            minimapCtx.clearRect(0, 0, minimap.width, minimap.height);
-            
-            // Draw storm on minimap
-            minimapCtx.fillStyle = "rgba(100, 0, 200, 0.3)";
-            minimapCtx.beginPath();
-            minimapCtx.arc(
-                (storm.x / game.mapSize) * minimap.width,
-                (storm.y / game.mapSize) * minimap.height,
-                (storm.radius / game.mapSize) * minimap.width,
-                0, Math.PI * 2
-            );
-            minimapCtx.fill();
-            
-            // Draw obstacles on minimap
-            obstacles.forEach(obs => {
-                if (obs.type === "building") {
-                    minimapCtx.fillStyle = "#888";
-                } else if (obs.type === "tree") {
-                    minimapCtx.fillStyle = "#0A5C36";
-                } else if (obs.type === "river") {
-                    minimapCtx.fillStyle = "#1E90FF";
-                }
-                minimapCtx.fillRect(
-                    (obs.x / game.mapSize) * minimap.width,
-                    (obs.y / game.mapSize) * minimap.height,
-                    (obs.width / game.mapSize) * minimap.width,
-                    (obs.height / game.mapSize) * minimap.height
-                );
-            });
-            
-            // Draw enemies on minimap
-            enemies.forEach(enemy => {
-                if (enemy.health > 0) {
-                    minimapCtx.fillStyle = enemy.color;
-                    minimapCtx.beginPath();
-                    minimapCtx.arc(
-                        (enemy.x / game.mapSize) * minimap.width,
-                        (enemy.y / game.mapSize) * minimap.height,
-                        3, 0, Math.PI * 2
-                    );
-                    minimapCtx.fill();
-                }
-            });
-            
-            // Draw player on minimap
-            minimapCtx.fillStyle = player.color;
-            minimapCtx.beginPath();
-            minimapCtx.arc(
-                (player.x / game.mapSize) * minimap.width,
-                (player.y / game.mapSize) * minimap.height,
-                4, 0, Math.PI * 2
-            );
-            minimapCtx.fill();
-            
-            // Draw minimap border
-            minimapCtx.strokeStyle = "white";
-            minimapCtx.lineWidth = 2;
-            minimapCtx.strokeRect(0, 0, minimap.width, minimap.height);
-        }
-
-        function drawFullMap() {
-            fullmapCtx.clearRect(0, 0, fullmap.width, fullmap.height);
-            
-            // Scale down the full map to fit screen
-            const scale = Math.min(
-                window.innerWidth / game.mapSize,
-                window.innerHeight / game.mapSize
-            );
-            fullmapCtx.save();
-            fullmapCtx.scale(scale, scale);
-            
-            // Draw storm on full map
-            fullmapCtx.fillStyle = "rgba(100, 0, 200, 0.3)";
-            fullmapCtx.beginPath();
-            fullmapCtx.arc(storm.x, storm.y, storm.radius, 0, Math.PI * 2);
-            fullmapCtx.fill();
-            
-            // Draw obstacles on full map
-            obstacles.forEach(obs => {
-                if (obs.type === "building") {
-                    fullmapCtx.fillStyle = "#888";
-                } else if (obs.type === "tree") {
-                    fullmapCtx.fillStyle = "#0A5C36";
-                } else if (obs.type === "river") {
-                    fullmapCtx.fillStyle = "#1E90FF";
-                }
-                fullmapCtx.fillRect(obs.x, obs.y, obs.width, obs.height);
-            });
-            
-            // Draw enemies on full map
-            enemies.forEach(enemy => {
-                if (enemy.health > 0) {
-                    fullmapCtx.fillStyle = enemy.color;
-                    fullmapCtx.beginPath();
-                    fullmapCtx.arc(enemy.x, enemy.y, 10, 0, Math.PI * 2);
-                    fullmapCtx.fill();
-                }
-            });
-            
-            // Draw player on full map
-            fullmapCtx.fillStyle = player.color;
-            fullmapCtx.beginPath();
-            fullmapCtx.arc(player.x, player.y, 15, 0, Math.PI * 2);
-            fullmapCtx.fill();
-            
-            fullmapCtx.restore();
-            
-            // Draw map instructions
-            fullmapCtx.fillStyle = "white";
-            fullmapCtx.font = "30px Arial";
-            fullmapCtx.textAlign = "center";
-            fullmapCtx.fillText("Press M to close map", fullmap.width/2, 50);
-        }
-
-        // Start the game
-        gameLoop();
-    </script>
-</body>
-</html>
+        // Determine winner after both cards are shown
+        setTimeout(() => {
+          determineWinner(playerCard, dealerCard);
+        }, 500);
+      }, 300);
+    }, 300);
+  }
+  
+  function determineWinner(playerCard, dealerCard) {
+    const playerIndex = cardValues.indexOf(playerCard);
+    const dealerIndex = cardValues.indexOf(dealerCard);
+    const resultEl = document.getElementById("gambleResult");
+    
+    if (playerIndex > dealerIndex) {
+      // Player wins
+      const winnings = currentBetAmount * 2;
+      coins += winnings;
+      resultEl.textContent = `You won ${winnings.toLocaleString()} coins!`;
+      resultEl.className = "win";
+      
+      // Achievement tracking
+      const gambleAchievement = achievements.find(a => a.id === 16);
+      if (gambleAchievement) {
+        gambleAchievement.progress += winnings;
+        checkAchievement(gambleAchievement);
+      }
+    } else if (playerIndex < dealerIndex) {
+      // Player loses
+      coins -= currentBetAmount;
+      resultEl.textContent = `You lost ${currentBetAmount.toLocaleString()} coins!`;
+      resultEl.className = "lose";
+    } else {
+      // Tie
+      resultEl.textContent = "It's a tie! You get your bet back.";
+      resultEl.className = "";
+    }
+    
+    currentBetAmount = 0;
+    updateDisplay();
+    updateGambleStats();
+    saveGame();
+  }
+  
+  function updateGambleStats() {
+    document.getElementById("currentBet").textContent = currentBetAmount.toLocaleString();
+    document.getElementById("potentialWin").textContent = (currentBetAmount * 2).toLocaleString();
+  }
+  
+  // Add this achievement to your achievements array (if you want)
+  /*
+  const achievements = [
+    // ... other achievements ...
+    { 
+      id: 16, 
+      name: "High Roller", 
+      desc: "Win 1,000,000 coins from gambling", 
+      reward: 5, 
+      unlocked: false, 
+      progress: 0, 
+      target: 1000000, 
+      stat: 'gamblingWins' 
+    }
+  ];
+  */
+</script>
