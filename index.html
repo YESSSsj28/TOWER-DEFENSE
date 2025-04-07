@@ -1,159 +1,26 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Simple 3D Map (Roblox Arena Style - Fixed)</title>
-    <style>
-        body { margin: 0; overflow: hidden; background-color: #222222; } /* Slightly lighter dark background */
-        canvas { display: block; }
-        .cursor {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            width: 10px;
-            height: 10px;
-            background-color: rgba(0, 0, 0, 0.7);
-            border-radius: 50%;
-            transform: translate(-50%, -50%);
-            pointer-events: none;
-            z-index: 10;
-        }
-    </style>
-</head>
-<body>
-    <canvas id="renderCanvas"></canvas>
-    <div class="cursor"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x222222); // Slightly lighter dark background
-
+        scene.background = new THREE.Color(0x87ceeb); // Light blue background
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
         const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('renderCanvas') });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
-        // Lighting
-        const ambientLight = new THREE.AmbientLight(0x606060);
-        scene.add(ambientLight);
-        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
-        directionalLight.position.set(1, 1, 1);
-        scene.add(directionalLight);
+        const geometry = new THREE.BoxGeometry( 1, 1, 1 );
+        const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
+        const cube = new THREE.Mesh( geometry, material );
+        scene.add( cube );
 
-        // Floor (Lighter color)
-        const floorGeometry = new THREE.PlaneGeometry(30, 30);
-        const floorMaterial = new THREE.MeshLambertMaterial({ color: 0x555555 }); // Medium gray floor
-        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
-        floor.rotation.x = -Math.PI / 2;
-        scene.add(floor);
-
-        // Walls (Lighter color)
-        const wallMaterial = new THREE.MeshLambertMaterial({ color: 0x888888 }); // Light gray walls
-        const wallHeight = 6; // Increased wall height
-        const wallThickness = 1;
-
-        function createWall(x, y, z, width, depth, rotationY = 0) {
-            const geometry = new THREE.BoxGeometry(width, y, depth);
-            const wall = new THREE.Mesh(geometry, wallMaterial);
-            wall.position.set(x, y / 2, z);
-            wall.rotation.y = THREE.MathUtils.degToRad(rotationY);
-            scene.add(wall);
-            return wall;
-        }
-
-        const courtyardSize = 20; // Slightly larger arena
-        const walls = [
-            createWall(0, wallHeight, courtyardSize / 2, courtyardSize, wallThickness),
-            createWall(0, wallHeight, -courtyardSize / 2, courtyardSize, wallThickness),
-            createWall(courtyardSize / 2, wallHeight, 0, wallThickness, courtyardSize, 90),
-            createWall(-courtyardSize / 2, wallHeight, 0, wallThickness, courtyardSize, 90)
-        ];
-
-        // First-Person Controls (Roblox Style)
-        let moveForward = false;
-        let moveBackward = false;
-        let moveLeft = false;
-        let moveRight = false;
-        let velocity = new THREE.Vector3();
-        const moveSpeed = 0.15; // Slightly slower
-        const lookSpeed = 0.002;
-        let pitch = 0;
-        let yaw = 0;
-
-        // Create a pivot point for the camera (simulates head rotation)
-        const cameraPivot = new THREE.Object3D();
-        cameraPivot.position.set(0, 1.6, 0); // Approximate head height
-        cameraPivot.add(camera);
-        scene.add(cameraPivot);
-        camera.position.set(0, 0, 0); // Camera is now relative to the pivot
-
-        document.addEventListener('keydown', (event) => {
-            switch (event.code) {
-                case 'KeyW': moveForward = true; break;
-                case 'KeyS': moveBackward = true; break;
-                case 'KeyA': moveLeft = true; break;
-                case 'KeyD': moveRight = true; break;
-            }
-        });
-
-        document.addEventListener('keyup', (event) => {
-            switch (event.code) {
-                case 'KeyW': moveForward = false; break;
-                case 'KeyS': moveBackward = false; break;
-                case 'KeyA': moveLeft = false; break;
-                case 'KeyD': moveRight = false; break;
-            }
-        });
-
-        document.addEventListener('mousemove', (event) => {
-            const deltaX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
-            const deltaY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
-
-            yaw -= deltaX * lookSpeed;
-            pitch -= deltaY * lookSpeed;
-            pitch = Math.max(-Math.PI / 2 * 0.8, Math.min(Math.PI / 2 * 0.5, pitch)); // More restrictive vertical look
-        });
-
-        function updateCameraRotation() {
-            cameraPivot.rotation.y = yaw;
-            camera.rotation.x = pitch;
-        }
-
-        function checkCollision() {
-            const cameraPosition = new THREE.Vector3().copy(cameraPivot.position);
-            cameraPosition.y -= 0.5; // Check slightly below pivot
-
-            for (const wall of walls) {
-                const box = new THREE.Box3().setFromObject(wall);
-                if (box.containsPoint(cameraPosition)) {
-                    return true;
-                }
-            }
-            return false;
-        }
+        camera.position.z = 5;
 
         function animate() {
-            requestAnimationFrame(animate);
-
-            // Movement
-            velocity.set(0, 0, 0);
-            if (moveForward) velocity.z = -moveSpeed;
-            if (moveBackward) velocity.z = moveSpeed;
-            if (moveLeft) velocity.x = -moveSpeed;
-            if (moveRight) velocity.x = moveSpeed;
-
-            velocity.applyEuler(new THREE.Euler(0, yaw, 0)); // Move relative to horizontal rotation
-
-            const newPosition = new THREE.Vector3().copy(cameraPivot.position).add(velocity);
-
-            // Basic Collision check before applying movement
-            const tempPosition = cameraPivot.position.clone();
-            cameraPivot.position.copy(newPosition);
-            if (checkCollision()) {
-                cameraPivot.position.copy(tempPosition); // Revert if collision
-            }
-
-            updateCameraRotation();
-            renderer.render(scene, cameraPivot); // Render using the pivot's position/rotation
+            requestAnimationFrame( animate );
+            cube.rotation.x += 0.01;
+            cube.rotation.y += 0.01;
+            renderer.render( scene, camera );
         }
         animate();
 
@@ -170,6 +37,7 @@
             canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
             canvas.requestPointerLock();
         });
+    </script>
     </script>
 </body>
 </html>
