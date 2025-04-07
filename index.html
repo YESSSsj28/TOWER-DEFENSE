@@ -1,20 +1,33 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Simple 3D Map (Single HTML)</title>
+    <title>Simple 3D Map (First-Person with Cursor)</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #f0f0f0; }
         canvas { display: block; }
+        .cursor {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black */
+            border-radius: 50%; /* Make it a circle */
+            transform: translate(-50%, -50%); /* Center it */
+            pointer-events: none; /* Don't interfere with mouse events on the canvas */
+            z-index: 10; /* Ensure it's on top of the canvas */
+        }
     </style>
 </head>
 <body>
+    <canvas id="renderCanvas"></canvas>
+    <div class="cursor"></div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
-        // Scene setup
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87ceeb); // Light blue background
+        scene.background = new THREE.Color(0x87ceeb);
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
-        const renderer = new THREE.WebGLRenderer();
+        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('renderCanvas') });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
@@ -32,100 +45,123 @@
         floor.rotation.x = -Math.PI / 2;
         scene.add(floor);
 
-        // Walls (simple cubes)
+        // Walls (larger)
         const wallMaterial = new THREE.MeshLambertMaterial({ color: 0x808080 });
-        const wallHeight = 3;
+        const wallHeight = 5; // Increased wall height
         const wallThickness = 1;
 
         function createWall(x, y, z, width, depth, rotationY = 0) {
-            const geometry = new THREE.BoxGeometry(width, wallHeight, depth);
+            const geometry = new THREE.BoxGeometry(width, y, depth);
             const wall = new THREE.Mesh(geometry, wallMaterial);
             wall.position.set(x, y / 2, z);
             wall.rotation.y = THREE.MathUtils.degToRad(rotationY);
             scene.add(wall);
+            return wall; // Return the wall object for collision
         }
 
         const courtyardSize = 15;
-        createWall(0, wallHeight, courtyardSize / 2, courtyardSize, wallThickness);
-        createWall(0, wallHeight, -courtyardSize / 2, courtyardSize, wallThickness);
-        createWall(courtyardSize / 2, wallHeight, 0, wallThickness, courtyardSize, 90);
-        createWall(-courtyardSize / 2, wallHeight, 0, wallThickness, courtyardSize, 90);
+        const walls = [
+            createWall(0, wallHeight, courtyardSize / 2, courtyardSize, wallThickness),
+            createWall(0, wallHeight, -courtyardSize / 2, courtyardSize, wallThickness),
+            createWall(courtyardSize / 2, wallHeight, 0, wallThickness, courtyardSize, 90),
+            createWall(-courtyardSize / 2, wallHeight, 0, wallThickness, courtyardSize, 90)
+        ];
 
-        // Hiding Spots (simple shapes)
-        const hideMaterial1 = new THREE.MeshLambertMaterial({ color: 0xa0522d }); // Brown
-        const hideMaterial2 = new THREE.MeshLambertMaterial({ color: 0x228b22 }); // Forest Green
+        // First-Person Controls
+        let moveForward = false;
+        let moveBackward = false;
+        let moveLeft = false;
+        let moveRight = false;
+        let velocity = new THREE.Vector3();
+        const moveSpeed = 0.2;
+        const lookSpeed = 0.002;
+        let pitch = 0;
+        let yaw = 0;
 
-        // Central "Fountain" (Cylinder)
-        const fountainGeometry = new THREE.CylinderGeometry(2, 2, 1.5, 32);
-        const fountain = new THREE.Mesh(fountainGeometry, hideMaterial1);
-        fountain.position.set(0, 0.75, 0);
-        scene.add(fountain);
+        camera.position.set(0, 1.5, 0); // Initial camera position
 
-        // Corner "Alcove" (Box)
-        const alcoveGeometry = new THREE.BoxGeometry(4, 2, 4);
-        const alcove = new THREE.Mesh(alcoveGeometry, hideMaterial2);
-        alcove.position.set(-courtyardSize / 2 + 3, 1, courtyardSize / 2 - 3);
-        scene.add(alcove);
+        document.addEventListener('keydown', (event) => {
+            switch (event.code) {
+                case 'KeyW': moveForward = true; break;
+                case 'KeyS': moveBackward = true; break;
+                case 'KeyA': moveLeft = true; break;
+                case 'KeyD': moveRight = true; break;
+            }
+        });
 
-        // Overturned "Cart" (Rotated Box)
-        const cartGeometry = new THREE.BoxGeometry(3, 1, 2);
-        const cart = new THREE.Mesh(cartGeometry, hideMaterial1);
-        cart.position.set(courtyardSize / 2 - 2, 0.5, -courtyardSize / 4);
-        cart.rotation.y = THREE.MathUtils.degToRad(30);
-        cart.rotation.z = THREE.MathUtils.degToRad(15);
-        scene.add(cart);
+        document.addEventListener('keyup', (event) => {
+            switch (event.code) {
+                case 'KeyW': moveForward = false; break;
+                case 'KeyS': moveBackward = false; break;
+                case 'KeyA': moveLeft = false; break;
+                case 'KeyD': moveRight = false; break;
+            }
+        });
 
-        // Large "Planter" (Box)
-        const planterGeometry = new THREE.BoxGeometry(5, 1, 3);
-        const planter = new THREE.Mesh(planterGeometry, hideMaterial2);
-        planter.position.set(courtyardSize / 4, 0.5, -courtyardSize / 2 + 2);
-        scene.add(planter);
+        document.addEventListener('mousemove', (event) => {
+            const deltaX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+            const deltaY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
 
-        // More decorative elements to reach 100+ lines
-        const smallCubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
-        const decorationMaterial = new THREE.MeshLambertMaterial({ color: 0xffd700 }); // Gold
+            yaw -= deltaX * lookSpeed;
+            pitch -= deltaY * lookSpeed;
+            pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)); // Limit vertical look
+        });
 
-        for (let i = 0; i < 10; i++) {
-            const cube = new THREE.Mesh(smallCubeGeometry, decorationMaterial);
-            cube.position.set(Math.random() * 10 - 5, 0.25, Math.random() * 10 - 5);
-            scene.add(cube);
+        function updateCameraRotation() {
+            camera.rotation.y = yaw;
+            camera.rotation.x = pitch;
         }
 
-        const pillarGeometry = new THREE.CylinderGeometry(0.3, 0.3, 4, 16);
-        const pillarMaterial = new THREE.MeshLambertMaterial({ color: 0xbebebe }); // Gray
+        function checkCollision() {
+            const cameraPosition = new THREE.Vector3().copy(camera.position);
+            cameraPosition.y -= 0.5; // Check slightly below camera center
 
-        const pillar1 = new THREE.Mesh(pillarGeometry, pillarMaterial);
-        pillar1.position.set(-courtyardSize / 2 + 1, 2, -courtyardSize / 2 + 1);
-        scene.add(pillar1);
+            for (const wall of walls) {
+                const box = new THREE.Box3().setFromObject(wall);
+                if (box.containsPoint(cameraPosition)) {
+                    return true;
+                }
+            }
+            return false;
+        }
 
-        const pillar2 = new THREE.Mesh(pillarGeometry, pillarMaterial);
-        pillar2.position.set(courtyardSize / 2 - 1, 2, courtyardSize / 2 - 1);
-        scene.add(pillar2);
-
-        const sphereGeometry = new THREE.SphereGeometry(0.7, 32, 32);
-        const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xffa500, wireframe: true }); // Orange wireframe
-        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
-        sphere.position.set(0, 3, courtyardSize / 2 - 3);
-        scene.add(sphere);
-
-        // "First-Person" Camera Position (Fixed)
-        camera.position.set(0, 1.5, 5); // Position the camera slightly above ground
-        camera.lookAt(new THREE.Vector3(0, 1, 0)); // Make it look towards the center
-
-        // Animation loop
         function animate() {
             requestAnimationFrame(animate);
+
+            // Movement
+            velocity.set(0, 0, 0);
+            if (moveForward) velocity.z = -moveSpeed;
+            if (moveBackward) velocity.z = moveSpeed;
+            if (moveLeft) velocity.x = -moveSpeed;
+            if (moveRight) velocity.x = moveSpeed;
+
+            velocity.applyEuler(new THREE.Euler(0, yaw, 0)); // Move relative to camera's horizontal rotation
+
+            camera.position.add(velocity);
+
+            // Basic Collision
+            if (checkCollision()) {
+                camera.position.sub(velocity); // Revert the movement if collision
+            }
+
+            updateCameraRotation();
             renderer.render(scene, camera);
         }
         animate();
 
-        // Handle window resizing
         window.addEventListener('resize', () => {
             const newWidth = window.innerWidth;
             const newHeight = window.innerHeight;
             camera.aspect = newWidth / newHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(newWidth, newHeight);
+        });
+
+        // Request pointer lock for better mouse control
+        const canvas = document.getElementById('renderCanvas');
+        canvas.addEventListener('click', () => {
+            canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
+            canvas.requestPointerLock();
         });
     </script>
 </body>
