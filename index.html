@@ -1,279 +1,132 @@
-<!-- Add this to your HTML (before </body>) -->
-<div class="modal" id="gambleModal">
-  <div class="modal-content">
-    <button class="close-modal" id="closeGambleModal">&times;</button>
-    <h3 class="modal-title">🎰 Casino Royale 🎰</h3>
-    
-    <div class="gamble-options">
-      <button class="gamble-btn" data-percent="10">Bet 10%</button>
-      <button class="gamble-btn" data-percent="25">Bet 25%</button>
-      <button class="gamble-btn" data-percent="50">Bet 50%</button>
-      <button class="gamble-btn" data-percent="100">ALL IN!</button>
-    </div>
-    
-    <div class="card-display" id="cardDisplay">
-      <div class="card" id="playerCard"></div>
-      <div class="vs">VS</div>
-      <div class="card" id="dealerCard"></div>
-    </div>
-    
-    <div class="gamble-result" id="gambleResult"></div>
-    <div class="gamble-stats">
-      <p>Current Bet: <span id="currentBet">0</span> coins</p>
-      <p>Potential Win: <span id="potentialWin">0</span> coins</p>
-    </div>
-  </div>
-</div>
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Simple 3D Map (Single HTML)</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #f0f0f0; }
+        canvas { display: block; }
+    </style>
+</head>
+<body>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script>
+        // Scene setup
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87ceeb); // Light blue background
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
+        const renderer = new THREE.WebGLRenderer();
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        document.body.appendChild(renderer.domElement);
 
-<style>
-  /* Gambling Modal Styles */
-  .gamble-options {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin: 1.5rem 0;
-  }
-  
-  .gamble-btn {
-    background: linear-gradient(145deg, var(--neon-purple), var(--neon-pink));
-    color: white;
-    border: none;
-    padding: 1rem;
-    border-radius: 12px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: all 0.2s;
-    font-family: 'Roboto Mono', monospace;
-    box-shadow: 0 0 15px rgba(211, 0, 197, 0.3);
-  }
-  
-  .gamble-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 25px rgba(211, 0, 197, 0.5);
-  }
-  
-  .gamble-btn:active {
-    transform: translateY(0);
-  }
-  
-  .card-display {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 2rem;
-    margin: 2rem 0;
-  }
-  
-  .card {
-    width: 80px;
-    height: 120px;
-    background: white;
-    border-radius: 8px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 2rem;
-    color: black;
-    font-weight: bold;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
-    position: relative;
-    overflow: hidden;
-  }
-  
-  .card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, rgba(255,255,255,0.8), rgba(255,255,255,0.9));
-    z-index: 1;
-  }
-  
-  .card span {
-    position: relative;
-    z-index: 2;
-  }
-  
-  .vs {
-    font-size: 1.5rem;
-    color: var(--neon-green);
-    font-weight: bold;
-  }
-  
-  .gamble-result {
-    text-align: center;
-    font-size: 1.2rem;
-    font-weight: bold;
-    min-height: 2rem;
-    margin: 1rem 0;
-  }
-  
-  .win {
-    color: var(--neon-green);
-    text-shadow: 0 0 10px var(--neon-green);
-  }
-  
-  .lose {
-    color: var(--neon-pink);
-    text-shadow: 0 0 10px var(--neon-pink);
-  }
-  
-  .gamble-stats {
-    background: rgba(0, 0, 0, 0.3);
-    padding: 1rem;
-    border-radius: 8px;
-    margin-top: 1rem;
-    text-align: center;
-  }
-  
-  .gamble-stats p {
-    margin: 0.5rem 0;
-    color: var(--text-secondary);
-  }
-  
-  .gamble-stats span {
-    color: var(--neon-blue);
-    font-weight: bold;
-  }
-</style>
+        // Lighting
+        const ambientLight = new THREE.AmbientLight(0x404040);
+        scene.add(ambientLight);
+        const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
+        directionalLight.position.set(1, 1, 1);
+        scene.add(directionalLight);
 
-<script>
-  // Add this to your JavaScript
-  // Gambling variables
-  let currentBetAmount = 0;
-  const cardValues = ['A', '2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K'];
-  
-  // Add gamble button to top buttons (add this where you initialize other buttons)
-  function initGambleButton() {
-    const topButtons = document.querySelector('.top-buttons');
-    const gambleBtn = document.createElement('button');
-    gambleBtn.className = 'top-btn';
-    gambleBtn.id = 'gambleBtn';
-    gambleBtn.textContent = '🎰 Gamble';
-    topButtons.appendChild(gambleBtn);
-    
-    // Add event listeners
-    gambleBtn.addEventListener('click', () => {
-      document.getElementById("gambleModal").style.display = "flex";
-      updateGambleStats();
-    });
-    
-    document.getElementById('closeGambleModal').addEventListener('click', () => {
-      document.getElementById("gambleModal").style.display = "none";
-    });
-    
-    document.querySelectorAll('.gamble-btn').forEach(btn => {
-      btn.addEventListener('click', function() {
-        const percent = parseInt(this.dataset.percent);
-        placeBet(percent);
-      });
-    });
-  }
-  
-  function placeBet(percent) {
-    currentBetAmount = Math.floor(coins * (percent / 100));
-    
-    if (currentBetAmount <= 0) {
-      document.getElementById("gambleResult").textContent = "You don't have enough coins to bet!";
-      document.getElementById("gambleResult").className = "lose";
-      return;
-    }
-    
-    if (currentBetAmount > coins) {
-      currentBetAmount = coins;
-    }
-    
-    updateGambleStats();
-    playGame();
-  }
-  
-  function playGame() {
-    // Clear previous result
-    document.getElementById("gambleResult").textContent = "";
-    document.getElementById("gambleResult").className = "";
-    
-    // Get random cards
-    const playerCard = cardValues[Math.floor(Math.random() * cardValues.length)];
-    const dealerCard = cardValues[Math.floor(Math.random() * cardValues.length)];
-    
-    // Display cards with animation
-    const playerCardEl = document.getElementById("playerCard");
-    const dealerCardEl = document.getElementById("dealerCard");
-    
-    playerCardEl.innerHTML = '<span>?</span>';
-    dealerCardEl.innerHTML = '<span>?</span>';
-    
-    // Animate card reveal
-    setTimeout(() => {
-      playerCardEl.innerHTML = `<span>${playerCard}</span>`;
-      
-      setTimeout(() => {
-        dealerCardEl.innerHTML = `<span>${dealerCard}</span>`;
-        
-        // Determine winner after both cards are shown
-        setTimeout(() => {
-          determineWinner(playerCard, dealerCard);
-        }, 500);
-      }, 300);
-    }, 300);
-  }
-  
-  function determineWinner(playerCard, dealerCard) {
-    const playerIndex = cardValues.indexOf(playerCard);
-    const dealerIndex = cardValues.indexOf(dealerCard);
-    const resultEl = document.getElementById("gambleResult");
-    
-    if (playerIndex > dealerIndex) {
-      // Player wins
-      const winnings = currentBetAmount * 2;
-      coins += winnings;
-      resultEl.textContent = `You won ${winnings.toLocaleString()} coins!`;
-      resultEl.className = "win";
-      
-      // Achievement tracking
-      const gambleAchievement = achievements.find(a => a.id === 16);
-      if (gambleAchievement) {
-        gambleAchievement.progress += winnings;
-        checkAchievement(gambleAchievement);
-      }
-    } else if (playerIndex < dealerIndex) {
-      // Player loses
-      coins -= currentBetAmount;
-      resultEl.textContent = `You lost ${currentBetAmount.toLocaleString()} coins!`;
-      resultEl.className = "lose";
-    } else {
-      // Tie
-      resultEl.textContent = "It's a tie! You get your bet back.";
-      resultEl.className = "";
-    }
-    
-    currentBetAmount = 0;
-    updateDisplay();
-    updateGambleStats();
-    saveGame();
-  }
-  
-  function updateGambleStats() {
-    document.getElementById("currentBet").textContent = currentBetAmount.toLocaleString();
-    document.getElementById("potentialWin").textContent = (currentBetAmount * 2).toLocaleString();
-  }
-  
-  // Add this achievement to your achievements array (if you want)
-  /*
-  const achievements = [
-    // ... other achievements ...
-    { 
-      id: 16, 
-      name: "High Roller", 
-      desc: "Win 1,000,000 coins from gambling", 
-      reward: 5, 
-      unlocked: false, 
-      progress: 0, 
-      target: 1000000, 
-      stat: 'gamblingWins' 
-    }
-  ];
-  */
-</script>
+        // Floor
+        const floorGeometry = new THREE.PlaneGeometry(30, 30);
+        const floorMaterial = new THREE.MeshBasicMaterial({ color: 0x6b8e23, side: THREE.DoubleSide });
+        const floor = new THREE.Mesh(floorGeometry, floorMaterial);
+        floor.rotation.x = -Math.PI / 2;
+        scene.add(floor);
+
+        // Walls (simple cubes)
+        const wallMaterial = new THREE.MeshLambertMaterial({ color: 0x808080 });
+        const wallHeight = 3;
+        const wallThickness = 1;
+
+        function createWall(x, y, z, width, depth, rotationY = 0) {
+            const geometry = new THREE.BoxGeometry(width, wallHeight, depth);
+            const wall = new THREE.Mesh(geometry, wallMaterial);
+            wall.position.set(x, y / 2, z);
+            wall.rotation.y = THREE.MathUtils.degToRad(rotationY);
+            scene.add(wall);
+        }
+
+        const courtyardSize = 15;
+        createWall(0, wallHeight, courtyardSize / 2, courtyardSize, wallThickness);
+        createWall(0, wallHeight, -courtyardSize / 2, courtyardSize, wallThickness);
+        createWall(courtyardSize / 2, wallHeight, 0, wallThickness, courtyardSize, 90);
+        createWall(-courtyardSize / 2, wallHeight, 0, wallThickness, courtyardSize, 90);
+
+        // Hiding Spots (simple shapes)
+        const hideMaterial1 = new THREE.MeshLambertMaterial({ color: 0xa0522d }); // Brown
+        const hideMaterial2 = new THREE.MeshLambertMaterial({ color: 0x228b22 }); // Forest Green
+
+        // Central "Fountain" (Cylinder)
+        const fountainGeometry = new THREE.CylinderGeometry(2, 2, 1.5, 32);
+        const fountain = new THREE.Mesh(fountainGeometry, hideMaterial1);
+        fountain.position.set(0, 0.75, 0);
+        scene.add(fountain);
+
+        // Corner "Alcove" (Box)
+        const alcoveGeometry = new THREE.BoxGeometry(4, 2, 4);
+        const alcove = new THREE.Mesh(alcoveGeometry, hideMaterial2);
+        alcove.position.set(-courtyardSize / 2 + 3, 1, courtyardSize / 2 - 3);
+        scene.add(alcove);
+
+        // Overturned "Cart" (Rotated Box)
+        const cartGeometry = new THREE.BoxGeometry(3, 1, 2);
+        const cart = new THREE.Mesh(cartGeometry, hideMaterial1);
+        cart.position.set(courtyardSize / 2 - 2, 0.5, -courtyardSize / 4);
+        cart.rotation.y = THREE.MathUtils.degToRad(30);
+        cart.rotation.z = THREE.MathUtils.degToRad(15);
+        scene.add(cart);
+
+        // Large "Planter" (Box)
+        const planterGeometry = new THREE.BoxGeometry(5, 1, 3);
+        const planter = new THREE.Mesh(planterGeometry, hideMaterial2);
+        planter.position.set(courtyardSize / 4, 0.5, -courtyardSize / 2 + 2);
+        scene.add(planter);
+
+        // More decorative elements to reach 100+ lines
+        const smallCubeGeometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+        const decorationMaterial = new THREE.MeshLambertMaterial({ color: 0xffd700 }); // Gold
+
+        for (let i = 0; i < 10; i++) {
+            const cube = new THREE.Mesh(smallCubeGeometry, decorationMaterial);
+            cube.position.set(Math.random() * 10 - 5, 0.25, Math.random() * 10 - 5);
+            scene.add(cube);
+        }
+
+        const pillarGeometry = new THREE.CylinderGeometry(0.3, 0.3, 4, 16);
+        const pillarMaterial = new THREE.MeshLambertMaterial({ color: 0xbebebe }); // Gray
+
+        const pillar1 = new THREE.Mesh(pillarGeometry, pillarMaterial);
+        pillar1.position.set(-courtyardSize / 2 + 1, 2, -courtyardSize / 2 + 1);
+        scene.add(pillar1);
+
+        const pillar2 = new THREE.Mesh(pillarGeometry, pillarMaterial);
+        pillar2.position.set(courtyardSize / 2 - 1, 2, courtyardSize / 2 - 1);
+        scene.add(pillar2);
+
+        const sphereGeometry = new THREE.SphereGeometry(0.7, 32, 32);
+        const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xffa500, wireframe: true }); // Orange wireframe
+        const sphere = new THREE.Mesh(sphereGeometry, sphereMaterial);
+        sphere.position.set(0, 3, courtyardSize / 2 - 3);
+        scene.add(sphere);
+
+        // "First-Person" Camera Position (Fixed)
+        camera.position.set(0, 1.5, 5); // Position the camera slightly above ground
+        camera.lookAt(new THREE.Vector3(0, 1, 0)); // Make it look towards the center
+
+        // Animation loop
+        function animate() {
+            requestAnimationFrame(animate);
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Handle window resizing
+        window.addEventListener('resize', () => {
+            const newWidth = window.innerWidth;
+            const newHeight = window.innerHeight;
+            camera.aspect = newWidth / newHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(newWidth, newHeight);
+        });
+    </script>
+</body>
+</html>
