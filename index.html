@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Simple 3D Map (First-Person with Cursor)</title>
+    <title>Simple 3D Map (Roblox Arena Style)</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #f0f0f0; }
         canvas { display: block; }
@@ -11,11 +11,11 @@
             left: 50%;
             width: 10px;
             height: 10px;
-            background-color: rgba(0, 0, 0, 0.7); /* Semi-transparent black */
-            border-radius: 50%; /* Make it a circle */
-            transform: translate(-50%, -50%); /* Center it */
-            pointer-events: none; /* Don't interfere with mouse events on the canvas */
-            z-index: 10; /* Ensure it's on top of the canvas */
+            background-color: rgba(0, 0, 0, 0.7);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 10;
         }
     </style>
 </head>
@@ -25,29 +25,30 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <script>
         const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87ceeb);
+        scene.background = new THREE.Color(0x1e1e1e); // Dark background
+
         const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
         const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('renderCanvas') });
         renderer.setSize(window.innerWidth, window.innerHeight);
         document.body.appendChild(renderer.domElement);
 
         // Lighting
-        const ambientLight = new THREE.AmbientLight(0x404040);
+        const ambientLight = new THREE.AmbientLight(0x606060);
         scene.add(ambientLight);
         const directionalLight = new THREE.DirectionalLight(0xffffff, 0.8);
         directionalLight.position.set(1, 1, 1);
         scene.add(directionalLight);
 
-        // Floor
+        // Floor (Solid Color - like Arena)
         const floorGeometry = new THREE.PlaneGeometry(30, 30);
-        const floorMaterial = new THREE.MeshBasicMaterial({ color: 0x6b8e23, side: THREE.DoubleSide });
+        const floorMaterial = new THREE.MeshLambertMaterial({ color: 0x404040 }); // Dark gray floor
         const floor = new THREE.Mesh(floorGeometry, floorMaterial);
         floor.rotation.x = -Math.PI / 2;
         scene.add(floor);
 
         // Walls (larger)
-        const wallMaterial = new THREE.MeshLambertMaterial({ color: 0x808080 });
-        const wallHeight = 5; // Increased wall height
+        const wallMaterial = new THREE.MeshLambertMaterial({ color: 0x707070 }); // Slightly lighter gray
+        const wallHeight = 6; // Increased wall height
         const wallThickness = 1;
 
         function createWall(x, y, z, width, depth, rotationY = 0) {
@@ -56,10 +57,10 @@
             wall.position.set(x, y / 2, z);
             wall.rotation.y = THREE.MathUtils.degToRad(rotationY);
             scene.add(wall);
-            return wall; // Return the wall object for collision
+            return wall;
         }
 
-        const courtyardSize = 15;
+        const courtyardSize = 20; // Slightly larger arena
         const walls = [
             createWall(0, wallHeight, courtyardSize / 2, courtyardSize, wallThickness),
             createWall(0, wallHeight, -courtyardSize / 2, courtyardSize, wallThickness),
@@ -67,18 +68,23 @@
             createWall(-courtyardSize / 2, wallHeight, 0, wallThickness, courtyardSize, 90)
         ];
 
-        // First-Person Controls
+        // First-Person Controls (Roblox Style)
         let moveForward = false;
         let moveBackward = false;
         let moveLeft = false;
         let moveRight = false;
         let velocity = new THREE.Vector3();
-        const moveSpeed = 0.2;
+        const moveSpeed = 0.15; // Slightly slower
         const lookSpeed = 0.002;
         let pitch = 0;
         let yaw = 0;
 
-        camera.position.set(0, 1.5, 0); // Initial camera position
+        // Create a pivot point for the camera (simulates head rotation)
+        const cameraPivot = new THREE.Object3D();
+        cameraPivot.position.set(0, 1.6, 0); // Approximate head height
+        cameraPivot.add(camera);
+        scene.add(cameraPivot);
+        camera.position.set(0, 0, 0); // Camera is now relative to the pivot
 
         document.addEventListener('keydown', (event) => {
             switch (event.code) {
@@ -104,17 +110,17 @@
 
             yaw -= deltaX * lookSpeed;
             pitch -= deltaY * lookSpeed;
-            pitch = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, pitch)); // Limit vertical look
+            pitch = Math.max(-Math.PI / 2 * 0.8, Math.min(Math.PI / 2 * 0.5, pitch)); // More restrictive vertical look
         });
 
         function updateCameraRotation() {
-            camera.rotation.y = yaw;
+            cameraPivot.rotation.y = yaw;
             camera.rotation.x = pitch;
         }
 
         function checkCollision() {
-            const cameraPosition = new THREE.Vector3().copy(camera.position);
-            cameraPosition.y -= 0.5; // Check slightly below camera center
+            const cameraPosition = new THREE.Vector3().copy(cameraPivot.position);
+            cameraPosition.y -= 0.5; // Check slightly below pivot
 
             for (const wall of walls) {
                 const box = new THREE.Box3().setFromObject(wall);
@@ -135,17 +141,19 @@
             if (moveLeft) velocity.x = -moveSpeed;
             if (moveRight) velocity.x = moveSpeed;
 
-            velocity.applyEuler(new THREE.Euler(0, yaw, 0)); // Move relative to camera's horizontal rotation
+            velocity.applyEuler(new THREE.Euler(0, yaw, 0)); // Move relative to horizontal rotation
 
-            camera.position.add(velocity);
+            const newPosition = new THREE.Vector3().copy(cameraPivot.position).add(velocity);
 
-            // Basic Collision
+            // Basic Collision check before applying movement
+            const tempPosition = cameraPivot.position.clone();
+            cameraPivot.position.copy(newPosition);
             if (checkCollision()) {
-                camera.position.sub(velocity); // Revert the movement if collision
+                cameraPivot.position.copy(tempPosition); // Revert if collision
             }
 
             updateCameraRotation();
-            renderer.render(scene, camera);
+            renderer.render(scene, cameraPivot); // Render using the pivot's position/rotation
         }
         animate();
 
@@ -157,7 +165,6 @@
             renderer.setSize(newWidth, newHeight);
         });
 
-        // Request pointer lock for better mouse control
         const canvas = document.getElementById('renderCanvas');
         canvas.addEventListener('click', () => {
             canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
