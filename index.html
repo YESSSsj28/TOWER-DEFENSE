@@ -1,43 +1,306 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <script>
-        const scene = new THREE.Scene();
-        scene.background = new THREE.Color(0x87ceeb); // Light blue background
-        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
-        const renderer = new THREE.WebGLRenderer({ canvas: document.getElementById('renderCanvas') });
-        renderer.setSize(window.innerWidth, window.innerHeight);
-        document.body.appendChild(renderer.domElement);
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fizz - Rethink Refreshment</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
 
-        const geometry = new THREE.BoxGeometry( 1, 1, 1 );
-        const material = new THREE.MeshBasicMaterial( { color: 0x00ff00 } );
-        const cube = new THREE.Mesh( geometry, material );
-        scene.add( cube );
-
-        camera.position.z = 5;
-
-        function animate() {
-            requestAnimationFrame( animate );
-            cube.rotation.x += 0.01;
-            cube.rotation.y += 0.01;
-            renderer.render( scene, camera );
+    <style>
+        /* --- CSS Reset & Base Styles --- */
+        :root {
+            --primary-color: #00a0a0; /* Teal/Aqua shade - adjust as needed */
+            --secondary-color: #f0f8ff; /* Alice Blue - light background */
+            --text-color: #333;
+            --light-text: #f8f8f8;
+            --heading-font: 'Poppins', sans-serif;
+            --body-font: 'Poppins', sans-serif;
         }
-        animate();
 
-        window.addEventListener('resize', () => {
-            const newWidth = window.innerWidth;
-            const newHeight = window.innerHeight;
-            camera.aspect = newWidth / newHeight;
-            camera.updateProjectionMatrix();
-            renderer.setSize(newWidth, newHeight);
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--body-font);
+            color: var(--text-color);
+            line-height: 1.6;
+            background-color: #fff;
+        }
+
+        h1, h2, h3 {
+            font-family: var(--heading-font);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+
+        h1 {
+            font-size: 3rem; /* Responsive font size below */
+            font-weight: 700;
+            color: var(--light-text); /* White text for hero */
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.5); /* Subtle shadow for readability */
+        }
+
+        h2 {
+            font-size: 2.2rem; /* Responsive font size below */
+            color: var(--primary-color);
+        }
+
+        p {
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+
+        img {
+            max-width: 100%;
+            height: auto;
+            display: block;
+             border-radius: 8px; /* Slightly rounded corners for images */
+        }
+
+        section {
+            padding: 4rem 2rem; /* Responsive padding below */
+            opacity: 0; /* Initially hidden for fade-in */
+            transform: translateY(20px); /* Initial offset for fade-in */
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+
+        section.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* --- Header/Hero Section --- */
+        .hero {
+            min-height: 70vh; /* Adjust height as needed */
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('YOUR_IMAGE_HERO_BACKGROUND_HERE.jpg') no-repeat center center/cover;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            color: var(--light-text);
+            padding: 2rem;
+        }
+
+        .hero h1 {
+            margin-bottom: 0.5rem;
+        }
+
+        .hero .intro {
+            font-size: 1.2rem; /* Responsive font size below */
+            max-width: 700px;
+            font-weight: 300;
+            margin-top: 1rem;
+            color: var(--light-text);
+        }
+
+        /* --- Content Sections --- */
+        .content-section {
+            display: flex;
+            flex-wrap: wrap; /* Allow wrapping on smaller screens */
+            align-items: center;
+            gap: 3rem; /* Space between image and text */
+            margin-bottom: 2rem; /* Space between sections */
+        }
+
+         /* Ensure sections alternate background for visual distinction */
+        #difference {
+             background-color: var(--secondary-color);
+        }
+        #active-life {
+             background-color: #fff;
+        }
+
+        .content-section .text-content,
+        .content-section .image-content {
+            flex: 1; /* Each takes half the space */
+            min-width: 300px; /* Prevent excessive shrinking */
+        }
+
+        /* Alternate layout: Image on the right for the second section */
+        #active-life .content-section {
+            flex-direction: row-reverse; /* Image on the right */
+        }
+
+
+        /* --- Footer --- */
+        footer {
+            background-color: var(--primary-color);
+            color: var(--light-text);
+            text-align: center;
+            padding: 3rem 1rem;
+            margin-top: 2rem; /* Ensure space above footer */
+        }
+
+        footer p {
+            font-size: 1.1rem;
+            margin-bottom: 1.5rem;
+            font-weight: 400;
+        }
+
+        .footer-links a {
+            color: var(--light-text);
+            text-decoration: none;
+            margin: 0 1rem;
+            padding: 0.8rem 1.5rem;
+            border: 1px solid var(--light-text);
+            border-radius: 25px; /* Pill-shaped buttons */
+            transition: background-color 0.3s ease, color 0.3s ease;
+            font-weight: 400;
+        }
+
+        .footer-links a:hover {
+            background-color: var(--light-text);
+            color: var(--primary-color);
+        }
+
+        /* --- Responsiveness --- */
+        @media (max-width: 992px) {
+            h1 { font-size: 2.5rem; }
+            h2 { font-size: 1.8rem; }
+            .hero .intro { font-size: 1.1rem; }
+        }
+
+        @media (max-width: 768px) {
+            section { padding: 3rem 1rem; }
+
+            .content-section,
+            #active-life .content-section {
+                flex-direction: column; /* Stack image and text vertically */
+                gap: 2rem;
+                text-align: center;
+            }
+            #active-life .content-section {
+                 flex-direction: column; /* Ensure stacking even if reversed */
+            }
+            .content-section .text-content,
+            .content-section .image-content {
+                min-width: unset; /* Remove minimum width */
+            }
+
+            .hero { min-height: 60vh; }
+            h1 { font-size: 2.2rem; }
+            h2 { font-size: 1.6rem; }
+            .hero .intro { font-size: 1rem; }
+
+            footer { padding: 2rem 1rem; }
+             .footer-links a {
+                display: block; /* Stack links vertically */
+                margin: 0.5rem auto; /* Center links */
+                max-width: 200px; /* Limit button width */
+            }
+        }
+
+         @media (max-width: 480px) {
+            h1 { font-size: 1.8rem; }
+            h2 { font-size: 1.4rem; }
+            section { padding: 2rem 1rem; }
+         }
+
+    </style>
+</head>
+<body>
+
+    <header class="hero">
+        <div class="container">
+            <h1>Rethink Refreshment.</h1>
+            <p class="intro">
+                Welcome to Fizz – where vibrant flavor meets mindful ingredients. We started with a simple idea: soda could be better. Better tasting, better for you, and better suited for your dynamic life. Forget the artificial overload and the sugar crashes. We meticulously craft every can to deliver the crisp, satisfying fizz and bold taste you love, but reimagined for today's world. It's the refreshment you crave, without compromise.
+            </p>
+        </div>
+    </header>
+
+    <main>
+        <section id="difference">
+            <div class="container content-section">
+                <div class="text-content">
+                    <h2>The Difference You Can Taste & Feel</h2>
+                    <p>Why choose Fizz? We believe in transparency and better choices. That’s why many of our exciting flavors feature significantly less sugar than traditional sodas, and we proudly offer incredible zero-sugar options that don't skimp on taste.</p>
+                    <p>Looking for enjoyment without the buzz? Our range includes options with little to no caffeine, giving you the freedom to refresh any time of day – morning, noon, or night – without worrying about jitters or disrupting your flow. It’s guilt-free goodness in every sip.</p>
+                </div>
+                <div class="image-content">
+                    <img src="YOUR_IMAGE_LIFESTYLE_HERE.jpg" alt="People enjoying Fizz soda in a relaxed setting">
+                </div>
+            </div>
+        </section>
+
+        <section id="active-life">
+             <div class="container content-section">
+                 <div class="text-content">
+                    <h2>Fuel Your Active Life</h2>
+                    <p>Your active lifestyle demands smart fuel and hydration. Fizz is the perfect partner for your adventures, workouts, and recovery moments. Unlike heavy, sugary drinks that can weigh you down, our sodas offer light, crisp refreshment that revitalizes without the unwanted additives.</p>
+                    <p>It's an ideal way to cool down and replenish fluids post-activity, providing delicious hydration that supports your performance and well-being. Elevate your hydration game and taste the vibrant difference with Fizz.</p>
+                </div>
+                <div class="image-content">
+                    <img src="YOUR_IMAGE_ACTIVE_LIFE_HERE.jpg" alt="Person cooling down with Fizz soda after exercise">
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>Ready to discover your new favorite?</p>
+            <div class="footer-links">
+                <a href="#explore">Explore Our Flavors</a> <a href="#find">Find Fizz Near You</a> </div>
+             <p style="margin-top: 2rem; font-size: 0.8rem; opacity: 0.7;">&copy; 2025 Fizz Beverages. All rights reserved.</p> </div>
+    </footer>
+
+    <script>
+        // --- Simple Fade-In Animation on Scroll ---
+        const sections = document.querySelectorAll('section');
+
+        const observerOptions = {
+            root: null, // relative to the viewport
+            rootMargin: '0px',
+            threshold: 0.1 // Trigger when 10% of the section is visible
+        };
+
+        const observerCallback = (entries, observer) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('visible');
+                    observer.unobserve(entry.target); // Optional: Stop observing once visible
+                }
+            });
+        };
+
+        const observer = new IntersectionObserver(observerCallback, observerOptions);
+
+        sections.forEach(section => {
+            observer.observe(section);
         });
 
-        const canvas = document.getElementById('renderCanvas');
-        canvas.addEventListener('click', () => {
-            canvas.requestPointerLock = canvas.requestPointerLock || canvas.mozRequestPointerLock;
-            canvas.requestPointerLock();
+        // --- Optional: Smooth scroll for footer links if they pointed to sections ---
+        // Example (if you had sections with matching IDs like #explore or #find):
+        /*
+        document.querySelectorAll('footer a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                if(targetElement) {
+                    targetElement.scrollIntoView({
+                        behavior: 'smooth'
+                    });
+                }
+            });
         });
+        */
+
     </script>
-    </script>
+
 </body>
 </html>
