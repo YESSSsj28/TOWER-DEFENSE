@@ -3,21 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fizz - Rethink Refreshment</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
-
+    <title>Among Us IRL | Random Imposter</title>
     <style>
-        /* --- CSS Reset & Base Styles --- */
         :root {
-            --primary-color: #00a0a0; /* Teal/Aqua shade */
-            --secondary-color: #f0f8ff; /* Alice Blue */
-            --text-color: #333;
-            --light-text: #f8f8f8;
-            --heading-font: 'Poppins', sans-serif;
-            --body-font: 'Poppins', sans-serif;
-            --modal-bg: #fff;
+            --primary: #ff5e5e;
+            --primary-dark: #d83f3f;
+            --secondary: #4cc9f0;
+            --bg: #0f172a;
+            --glass: rgba(255, 255, 255, 0.1);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --success: #4ade80;
+            --crewmate: #4cc9f0;
+            --imposter: #ff5e5e;
+            --danger: #f87171;
         }
 
         * {
@@ -27,473 +25,1052 @@
         }
 
         body {
-            font-family: var(--body-font);
-            color: var(--text-color);
-            line-height: 1.6;
-            background-color: #fff;
-            position: relative; /* Needed for background animation pseudo-elements */
-            overflow-x: hidden; /* Prevent horizontal scroll from animations */
-        }
-
-        /* --- Enhanced Background Animation (Floating Bubbles/Particles) --- */
-        body::before, body::after {
-            content: '';
-            position: fixed; /* Use fixed to stay behind content */
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            pointer-events: none; /* Allows clicking through */
-            z-index: -1; /* Place behind everything */
-            /* Use lighter, more distinct bubbles */
-            background: radial-gradient(circle, rgba(0, 160, 160, 0.15) 1px, rgba(0, 160, 160, 0.1) 2px, transparent 3px);
-            background-size: 40px 40px; /* Slightly larger grid */
-            animation: floatUp 20s linear infinite; /* Renamed and adjusted timing */
-        }
-
-        body::after {
-            background-size: 60px 60px; /* Different size */
-            /* Faster, different direction/timing */
-            animation: floatUp 15s linear infinite reverse;
-            opacity: 0.6; /* Slightly different base opacity */
-        }
-
-        /* Updated Keyframes for more vertical movement and opacity */
-        @keyframes floatUp {
-            0% {
-                transform: translate(0, 0);
-                opacity: 0.5;
-            }
-            50% {
-                transform: translate(-10px, -50vh); /* Move significantly upwards */
-                opacity: 0.8;
-            }
-            100% {
-                transform: translate(5px, -100vh); /* Continue upwards off-screen */
-                opacity: 0; /* Fade out at the top */
-            }
-        }
-
-
-        h1, h2, h3 {
-            font-family: var(--heading-font);
-            font-weight: 600;
-            margin-bottom: 1rem;
-            line-height: 1.3;
-        }
-
-        h1 {
-            font-size: 3rem;
-            font-weight: 700;
-            color: var(--light-text);
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.6);
-        }
-
-        h2 {
-            font-size: 2.2rem;
-            color: var(--primary-color);
-        }
-        h3 { /* Style for flavor names in modal */
-            font-size: 1.5rem;
-            color: var(--primary-color);
-            margin-bottom: 0.5rem;
-        }
-
-        p {
-            margin-bottom: 1rem;
-            font-weight: 300;
-        }
-
-        img {
-            max-width: 100%;
-            height: auto;
-            display: block;
-            border-radius: 8px; /* Consistent rounded corners */
-        }
-
-        /* --- Enhanced Scroll Reveal Animation --- */
-        section {
-            padding: 4rem 2rem;
-            opacity: 0;
-            transform: translateY(50px); /* Increased offset */
-            transition: opacity 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275), transform 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275); /* Added cubic-bezier for bounce effect */
-        }
-
-        section.visible {
-            opacity: 1;
-            transform: translateY(0);
+            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: white;
+            min-height: 100vh;
+            padding: 2rem;
+            background-image: 
+                radial-gradient(at 80% 0%, hsla(189, 100%, 56%, 0.15) 0px, transparent 50%),
+                radial-gradient(at 0% 50%, hsla(355, 100%, 93%, 0.15) 0px, transparent 50%);
         }
 
         .container {
-            max-width: 1100px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
         }
 
-        /* --- Header/Hero Section --- */
-        .hero {
-            min-height: 70vh;
-            /* Example: Slightly angled gradient overlay */
-            background: linear-gradient(150deg, rgba(0, 60, 60, 0.7), rgba(0, 0, 0, 0.5)), url('YOUR_IMAGE_HERO_BACKGROUND_HERE.jpg') no-repeat center center/cover; /* <<< REPLACE IMAGE URL */
+        header {
+            grid-column: 1 / -1;
+            text-align: center;
+            margin-bottom: 1rem;
+            animation: fadeIn 0.8s ease-out;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .header-buttons {
+            display: flex;
+            gap: 1rem;
+            margin-top: 0.5rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            margin-bottom: 0.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 1.1rem;
+            opacity: 0.8;
+            font-weight: 400;
+        }
+
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(16px) saturate(180%);
+            -webkit-backdrop-filter: blur(16px) saturate(180%);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .glass-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        /* TASKS SECTION */
+        .tasks-section {
+            grid-column: 1;
+        }
+
+        .progress-container {
+            width: 100%;
+            margin-bottom: 1.5rem;
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 100px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            border-radius: 100px;
+            width: 0%;
+            transition: width 0.6s cubic-bezier(0.65, 0, 0.35, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.3) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            animation: shimmer 2s infinite;
+        }
+
+        .task-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 1rem;
+        }
+
+        .task {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 1rem;
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            font-weight: 500;
+            border-radius: 16px;
+        }
+
+        .task::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .task:hover::before {
+            opacity: 1;
+        }
+
+        .task.completed {
+            background: var(--success);
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(74, 222, 128, 0.3);
+        }
+
+        .task.completed::after {
+            content: '✓';
+            position: absolute;
+            font-size: 1.5rem;
+            font-weight: bold;
+            animation: checkIn 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        /* IMPOSTER SECTION */
+        .imposter-section {
+            grid-column: 2;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .role-display {
+            flex-grow: 1;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
+            padding: 2rem 0;
+            position: relative;
+        }
+
+        .player-name {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, #fff, #eee);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
             text-align: center;
-            color: var(--light-text);
-            padding: 2rem;
-            position: relative; /* Ensure hero content is above background animation */
-            z-index: 1;
         }
 
-        .hero h1 { margin-bottom: 0.5rem; }
-        .hero .intro { font-size: 1.2rem; max-width: 700px; font-weight: 300; margin-top: 1rem; color: var(--light-text); }
-
-        /* --- Content Sections --- */
-        .content-section {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 3rem;
-            margin-bottom: 2rem;
-            position: relative; /* Ensure section content is above background animation */
-            z-index: 1;
-        }
-
-        #difference { background-color: var(--secondary-color); }
-        #active-life { background-color: #fff; }
-
-        .content-section .text-content,
-        .content-section .image-content { flex: 1; min-width: 300px; }
-
-        #active-life .content-section { flex-direction: row-reverse; }
-
-        /* --- Footer --- */
-        footer {
-            background-color: var(--primary-color);
-            color: var(--light-text);
+        .role {
+            font-size: 3rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0;
+            transform: scale(0.8);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             text-align: center;
-            padding: 3rem 1rem;
-            margin-top: 2rem;
-            position: relative; /* Ensure footer content is above background animation */
-            z-index: 1;
+            margin: 1rem 0;
         }
-        footer p { font-size: 1.1rem; margin-bottom: 1.5rem; font-weight: 400; }
-        .footer-links a {
-            color: var(--light-text);
-            text-decoration: none;
-            margin: 0 0.5rem;
+
+        .role.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .role.crewmate {
+            color: var(--crewmate);
+            text-shadow: 0 0 20px rgba(76, 201, 240, 0.5);
+        }
+
+        .role.imposter {
+            color: var(--imposter);
+            text-shadow: 0 0 20px rgba(255, 94, 94, 0.5);
+        }
+
+        .role-icon {
+            width: 120px;
+            height: 120px;
+            margin: 1rem auto;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            opacity: 0;
+            transform: scale(0.5);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .role-icon.show {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .btn {
             padding: 0.8rem 1.5rem;
-            border: 1px solid var(--light-text);
-            border-radius: 25px;
-            transition: background-color 0.3s ease, color 0.3s ease, transform 0.2s ease-out; /* Added transform transition */
-            font-weight: 400;
-            display: inline-block; /* Ensure proper spacing */
-            margin-bottom: 1rem; /* Add space between buttons on wrap */
-        }
-        .footer-links a:hover {
-            background-color: var(--light-text);
-            color: var(--primary-color);
-            transform: translateY(-2px); /* Subtle lift on hover */
+            border: none;
+            border-radius: 100px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
         }
 
-        /* --- Flavor Modal Styles --- */
-        .modal {
-            display: none; /* Hidden by default */
-            position: fixed; /* Stay in place */
-            z-index: 1000; /* Sit on top */
-            left: 0;
+        .btn-primary {
+            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 15px rgba(216, 63, 63, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(216, 63, 63, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-danger {
+            background: linear-gradient(90deg, var(--danger), var(--primary-dark));
+            color: white;
+            box-shadow: 0 4px 15px rgba(216, 63, 63, 0.3);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(216, 63, 63, 0.4);
+        }
+
+        /* Sabotage modal */
+        .modal-overlay {
+            position: fixed;
             top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .modal {
+            background: var(--glass);
+            backdrop-filter: blur(16px) saturate(180%);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            transform: translateY(20px);
+            transition: transform 0.3s ease;
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .modal-header {
+            margin-bottom: 1.5rem;
+            text-align: center;
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .modal-body {
+            margin-bottom: 2rem;
+        }
+
+        .modal-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .sabotage-option {
+            background: var(--glass);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .sabotage-option:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-3px);
+        }
+
+        .sabotage-option h3 {
+            margin-bottom: 0.5rem;
+            color: var(--imposter);
+        }
+
+        .sabotage-option p {
+            opacity: 0.8;
+            font-size: 0.9rem;
+        }
+
+        .time-input {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .time-input input {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 0.8rem;
+            color: white;
+            font-size: 1rem;
+            width: 80px;
+            text-align: center;
+        }
+
+        .time-input label {
+            font-size: 0.9rem;
+            opacity: 0.8;
+        }
+
+        /* Timer */
+        .timer-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            background: var(--glass);
+            backdrop-filter: blur(16px) saturate(180%);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            padding: 1rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+            display: none;
+        }
+
+        .timer-container.active {
+            display: block;
+            animation: pulse 1.5s infinite;
+        }
+
+        .timer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+
+        .timer-title {
+            font-weight: 600;
+            color: var(--imposter);
+        }
+
+        .timer-close {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .timer-close:hover {
+            opacity: 1;
+        }
+
+        /* Round complete message */
+        .round-complete {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: var(--glass);
+            backdrop-filter: blur(16px) saturate(180%);
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            z-index: 1000;
+            text-align: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .round-complete.active {
+            opacity: 1;
+        }
+
+        .round-complete h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        /* YouTube embed */
+        .youtube-embed {
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
             height: 100%;
-            overflow: auto; /* Enable scroll if needed */
-            background-color: rgba(0,0,0,0.6); /* Black w/ opacity */
-            backdrop-filter: blur(5px); /* Modern blur effect */
-            animation: fadeIn 0.3s ease-out; /* Modal fade in */
+            z-index: -1;
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .sabotage-video {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 999;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .sabotage-video.active {
+            opacity: 1;
+            z-index: 1001;
         }
 
         @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .modal-content {
-            background-color: var(--modal-bg);
-            margin: 10% auto; /* Centered */
-            padding: 30px;
-            border: 1px solid #eee; /* Lighter border */
-            width: 80%; /* Responsive width */
-            max-width: 600px;
-            border-radius: 10px;
-            position: relative;
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15); /* Slightly enhanced shadow */
-            animation: slideIn 0.4s ease-out; /* Content slide in */
+        @keyframes checkIn {
+            0% { opacity: 0; transform: scale(0); }
+            80% { transform: scale(1.2); }
+            100% { opacity: 1; transform: scale(1); }
         }
 
-        @keyframes slideIn {
-            from { transform: translateY(-30px); opacity: 0; }
-            to { transform: translateY(0); opacity: 1; }
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
         }
 
-        .close-button {
-            color: #aaa;
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            font-size: 28px;
-            font-weight: bold;
-            transition: color 0.3s ease;
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
         }
 
-        .close-button:hover,
-        .close-button:focus {
-            color: #333;
-            text-decoration: none;
-            cursor: pointer;
-        }
-
-        .modal h2 {
-            text-align: center;
-            margin-bottom: 2rem;
-            color: var(--primary-color);
-        }
-
-        .flavor-item {
-            margin-bottom: 2rem;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid #eee;
-        }
-        .flavor-item:last-child {
-            border-bottom: none; /* Remove border from last item */
-            margin-bottom: 0;
-            padding-bottom: 0;
-        }
-
-        .flavor-item p {
-            font-size: 0.95rem;
-            font-weight: 300;
-        }
-
-        /* --- Optional Button Hover Style Example --- */
-        /* Apply class="button-primary" to any button elements you might add */
-        /*
-        .button-primary {
-            display: inline-block;
-            padding: 0.8rem 1.5rem;
-            background-color: var(--primary-color);
-            color: var(--light-text);
-            border: none;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s ease-out, background-color 0.3s ease, box-shadow 0.2s ease;
-        }
-        .button-primary:hover {
-            transform: translateY(-2px);
-            background-color: #008080; // Darker shade on hover
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        */
-
-
-        /* --- Responsiveness --- */
-        @media (max-width: 992px) {
-            h1 { font-size: 2.5rem; }
-            h2 { font-size: 1.8rem; }
-            .hero .intro { font-size: 1.1rem; }
+        /* Responsive adjustments */
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .imposter-section {
+                grid-column: 1;
+                margin-top: 2rem;
+            }
         }
 
         @media (max-width: 768px) {
-            section { padding: 3rem 1rem; }
-
-            .content-section,
-            #active-life .content-section { flex-direction: column; gap: 2rem; text-align: center; }
-            #active-life .content-section { flex-direction: column; } /* Ensure stacking */
-            .content-section .text-content, .content-section .image-content { min-width: unset; }
-
-            .hero { min-height: 60vh; }
-            h1 { font-size: 2.2rem; }
-            h2 { font-size: 1.6rem; }
-            .hero .intro { font-size: 1rem; }
-
-            footer { padding: 2rem 1rem; }
-            .footer-links a { margin: 0.5rem 0.2rem; /* Adjust spacing for stacked buttons */ }
-
-            .modal-content { width: 90%; margin: 20% auto; }
-            h3 { font-size: 1.3rem;}
-
-            /* Consider re-enabling this on low-power devices if performance is an issue */
-            /*
-            body::before, body::after {
-                display: none;
+            .task-grid {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
             }
-            */
-        }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .player-name {
+                font-size: 1.5rem;
+            }
+            
+            .role {
+                font-size: 2rem;
+            }
 
-        @media (max-width: 480px) {
-            h1 { font-size: 1.8rem; }
-            h2 { font-size: 1.4rem; }
-            section { padding: 2rem 1rem; }
-            .modal-content { margin: 25% auto; padding: 20px;}
-            h3 { font-size: 1.2rem; }
-        }
+            .header-buttons {
+                flex-direction: column;
+                width: 100%;
+            }
 
+            .header-buttons .btn {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 <body>
-
-    <header class="hero">
-        <div class="container">
-            <h1>Rethink Refreshment.</h1>
-            <p class="intro">
-                Welcome to Fizz – where vibrant flavor meets mindful ingredients. We started with a simple idea: soda could be better. Better tasting, better for you, and better suited for your dynamic life. Forget the artificial overload and the sugar crashes. We meticulously craft every can to deliver the crisp, satisfying fizz and bold taste you love, but reimagined for today's world. It's the refreshment you crave, without compromise.
-            </p>
-        </div>
-    </header>
-
-    <main>
-        <section id="difference">
-            <div class="container content-section">
-                <div class="text-content">
-                    <h2>The Difference You Can Taste & Feel</h2>
-                    <p>Why choose Fizz? We believe in transparency and better choices. That’s why many of our exciting flavors feature significantly less sugar than traditional sodas, and we proudly offer incredible zero-sugar options that don't skimp on taste.</p>
-                    <p>Looking for enjoyment without the buzz? Our range includes options with little to no caffeine, giving you the freedom to refresh any time of day – morning, noon, or night – without worrying about jitters or disrupting your flow. It’s guilt-free goodness in every sip.</p>
-                </div>
-                <div class="image-content">
-                    <img src="YOUR_IMAGE_LIFESTYLE_HERE.jpg" alt="People enjoying Fizz soda in a relaxed setting"> </div>
-            </div>
-        </section>
-
-        <section id="active-life">
-            <div class="container content-section">
-                <div class="text-content">
-                    <h2>Fuel Your Active Life</h2>
-                    <p>Your active lifestyle demands smart fuel and hydration. Fizz is the perfect partner for your adventures, workouts, and recovery moments. Unlike heavy, sugary drinks that can weigh you down, our sodas offer light, crisp refreshment that revitalizes without the unwanted additives.</p>
-                    <p>It's an ideal way to cool down and replenish fluids post-activity, providing delicious hydration that supports your performance and well-being. Elevate your hydration game and taste the vibrant difference with Fizz.</p>
-                </div>
-                <div class="image-content">
-                    <img src="YOUR_IMAGE_ACTIVE_LIFE_HERE.jpg" alt="Person cooling down with Fizz soda after exercise"> </div>
-            </div>
-        </section>
-    </main>
-
-    <footer>
-        <div class="container">
-            <p>Ready to discover your new favorite?</p>
-            <div class="footer-links">
-                <a href="#" id="exploreFlavorsBtn">Explore Our Flavors</a>
-                <a href="#find">Find Fizz Near You</a> </div>
-            <p style="margin-top: 2rem; font-size: 0.8rem; opacity: 0.7;">&copy; 2025 Fizz Beverages. All rights reserved.</p> </div>
-    </footer>
-
-    <div id="flavorModal" class="modal">
-        <div class="modal-content">
-            <span class="close-button">&times;</span>
-            <h2>Explore Our Flavors</h2>
-
-            <div class="flavor-item">
-                <h3>Cherry Fizz</h3>
-                <p>Experience the burst of bold, juicy cherry flavor in every sip. Cherry Fizz is crafted with real cherry essence for an authentic taste that's both sweet and refreshingly tart. Its unique trait? A stunning, vibrant red hue derived purely from natural fruit extracts, making it as beautiful to look at as it is delicious to drink.</p>
-            </div>
-
-            <div class="flavor-item">
-                <h3>Blueberry Fizz</h3>
-                <p>Dive into the delightful taste of sun-ripened blueberries. Blueberry Fizz offers a smooth, subtly sweet flavor profile that's incredibly refreshing. Its unique standout quality is the infusion of natural blueberry antioxidants, adding a touch of wellness to your favorite fizzy treat.</p>
-            </div>
-            </div>
+    <!-- YouTube embed for audio (hidden) -->
+    <div class="youtube-embed">
+        <iframe width="100%" height="100%" src="https://www.youtube.com/embed/WernYF9GmAo?enablejsapi=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen id="youtubeIframe"></iframe>
     </div>
 
+    <!-- Sabotage video embed -->
+    <div class="sabotage-video" id="sabotageVideo">
+        <iframe width="100%" height="100%" src="https://www.youtube.com/embed/ZrXA0JoOuwE?enablejsapi=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen id="sabotageVideoIframe"></iframe>
+    </div>
+
+    <!-- Timer display -->
+    <div class="timer-container" id="timerContainer">
+        <div class="timer-header">
+            <div class="timer-title">SABOTAGE ACTIVE</div>
+            <button class="timer-close" id="closeTimerBtn">×</button>
+        </div>
+        <div id="timerMessage"></div>
+    </div>
+
+    <!-- Round complete message -->
+    <div class="round-complete" id="roundComplete">
+        <h2>Round Complete!</h2>
+        <p>Starting next round in 3 seconds...</p>
+    </div>
+
+    <div class="container">
+        <header>
+            <div>
+                <h1>Among Us IRL</h1>
+                <p class="subtitle">Complete 15 tasks. Random imposter each round!</p>
+            </div>
+            <div class="header-buttons">
+                <button class="btn btn-danger glass-card" id="sabotageBtn">SABOTAGE</button>
+                <button class="btn btn-secondary glass-card" id="roleSelectorBtn">ROLE SELECTOR</button>
+            </div>
+        </header>
+
+        <!-- TASKS SECTION -->
+        <section class="tasks-section glass-card">
+            <div class="progress-container">
+                <div class="progress-header">
+                    <span>Mission Progress</span>
+                    <span id="progressText">0/15</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+            </div>
+
+            <div class="task-grid" id="taskGrid">
+                <!-- Tasks will be added here -->
+            </div>
+
+            <div class="controls">
+                <button class="btn btn-primary" id="resetBtn">Reset All Tasks</button>
+            </div>
+        </section>
+
+        <!-- IMPOSTER SECTION -->
+        <section class="imposter-section glass-card">
+            <h2>Role Revealer</h2>
+            
+            <div class="role-display">
+                <div class="player-name" id="currentPlayer">Tap Reveal</div>
+                <div class="role-icon" id="roleIcon"></div>
+                <div class="role" id="roleDisplay"></div>
+            </div>
+            
+            <div class="controls">
+                <button class="btn btn-primary" id="showRoleBtn">Reveal Role</button>
+                <button class="btn btn-secondary" id="nextPlayerBtn">Next Player</button>
+            </div>
+        </section>
+    </div>
+
+    <!-- Sabotage Modal -->
+    <div class="modal-overlay" id="sabotageModal">
+        <div class="modal glass-card">
+            <div class="modal-header">
+                <h2 class="modal-title">SABOTAGE</h2>
+                <p>Choose your sabotage type:</p>
+            </div>
+            <div class="modal-body">
+                <div class="sabotage-option" id="nairaRoomOption">
+                    <h3>Naira's Room</h3>
+                    <p>2 people must have their hands on paper until timer ends</p>
+                </div>
+                <div class="sabotage-option" id="diningTableOption">
+                    <h3>Dining Table</h3>
+                    <p>2 people must sit down until timer ends</p>
+                </div>
+                <div class="time-input">
+                    <label for="sabotageDelay">Delay (seconds):</label>
+                    <input type="number" id="sabotageDelay" min="0" max="300" value="0">
+                    <button class="btn btn-primary" id="nowBtn">Now</button>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancelSabotageBtn">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <script>
-        // --- Scroll Reveal Animation ---
-        const sections = document.querySelectorAll('section');
-        const observerOptions = {
-            root: null,
-            rootMargin: '0px',
-            threshold: 0.15 // Trigger slightly earlier/later if needed
-        };
-
-        const observerCallback = (entries, observer) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add('visible');
-                    // Keep observing if you want animations on scroll up too
-                    // observer.unobserve(entry.target);
-                } else {
-                    // Optional: Remove class if you want animation to trigger every time it scrolls into view
-                    // entry.target.classList.remove('visible');
+        // Configuration
+        const TOTAL_TASKS = 15;
+        const PLAYERS = ["Arya", "Shan", "Neev", "Naira", "Yug"];
+        let IMPOSTER = ""; // Will be set randomly
+        let sabotageDelay = localStorage.getItem('sabotageDelay') || 0;
+        
+        // DOM Elements
+        const taskGrid = document.getElementById('taskGrid');
+        const progressFill = document.getElementById('progressFill');
+        const progressText = document.getElementById('progressText');
+        const resetBtn = document.getElementById('resetBtn');
+        const currentPlayer = document.getElementById('currentPlayer');
+        const roleDisplay = document.getElementById('roleDisplay');
+        const roleIcon = document.getElementById('roleIcon');
+        const showRoleBtn = document.getElementById('showRoleBtn');
+        const nextPlayerBtn = document.getElementById('nextPlayerBtn');
+        const sabotageBtn = document.getElementById('sabotageBtn');
+        const roleSelectorBtn = document.getElementById('roleSelectorBtn');
+        const sabotageModal = document.getElementById('sabotageModal');
+        const nairaRoomOption = document.getElementById('nairaRoomOption');
+        const diningTableOption = document.getElementById('diningTableOption');
+        const cancelSabotageBtn = document.getElementById('cancelSabotageBtn');
+        const timerContainer = document.getElementById('timerContainer');
+        const timerMessage = document.getElementById('timerMessage');
+        const closeTimerBtn = document.getElementById('closeTimerBtn');
+        const roundComplete = document.getElementById('roundComplete');
+        const youtubeIframe = document.getElementById('youtubeIframe');
+        const sabotageVideo = document.getElementById('sabotageVideo');
+        const sabotageVideoIframe = document.getElementById('sabotageVideoIframe');
+        const sabotageDelayInput = document.getElementById('sabotageDelay');
+        const nowBtn = document.getElementById('nowBtn');
+        
+        // YouTube Player API
+        let youtubePlayer;
+        let sabotageVideoPlayer;
+        
+        function onYouTubeIframeAPIReady() {
+            youtubePlayer = new YT.Player('youtubeIframe', {
+                events: {
+                    'onReady': onPlayerReady,
+                    'onStateChange': onPlayerStateChange
                 }
             });
-        };
-        const observer = new IntersectionObserver(observerCallback, observerOptions);
-        sections.forEach(section => {
-            observer.observe(section);
-        });
-
-        // --- Flavor Modal Logic ---
-        const modal = document.getElementById('flavorModal');
-        const openModalBtn = document.getElementById('exploreFlavorsBtn');
-        const closeModalBtn = document.querySelector('.close-button');
-
-        // Function to open the modal
-        const openModal = () => {
-            modal.style.display = 'block';
-            document.body.style.overflow = 'hidden'; // Prevent background scroll when modal is open
+            
+            sabotageVideoPlayer = new YT.Player('sabotageVideoIframe', {
+                events: {
+                    'onReady': onSabotagePlayerReady,
+                    'onStateChange': onSabotagePlayerStateChange
+                }
+            });
         }
 
-        // Function to close the modal
-        const closeModal = () => {
-            modal.style.display = 'none';
-            document.body.style.overflow = ''; // Restore background scroll
+        function onPlayerReady(event) {
+            // Player is ready
         }
 
+        function onPlayerStateChange(event) {
+            // Player state changed
+        }
+        
+        function onSabotagePlayerReady(event) {
+            // Sabotage player is ready
+        }
+        
+        function onSabotagePlayerStateChange(event) {
+            if (event.data === YT.PlayerState.ENDED) {
+                // When sabotage video ends, hide it and show the timer
+                sabotageVideo.classList.remove('active');
+                timerContainer.classList.add('active');
+                
+                // Play the countdown audio
+                if (youtubePlayer) {
+                    youtubePlayer.seekTo(0);
+                    youtubePlayer.playVideo();
+                }
+            }
+        }
+
+        // Load YouTube API
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        const firstScriptTag = document.getElementsByTagName('script')[0];
+        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+
+        // State
+        let completedTasks = 0;
+        let currentPlayerIndex = 0;
+        let isRoleRevealed = false;
+        let sabotageActive = false;
+        let allPlayersRevealed = false;
+        
+        // Initialize
+        function init() {
+            // Set random imposter
+            selectRandomImposter();
+            
+            // Set saved sabotage delay
+            sabotageDelayInput.value = sabotageDelay;
+            
+            createTasks();
+            updatePlayerDisplay();
+            updateProgress();
+        }
+        
+        // Select random imposter
+        function selectRandomImposter() {
+            IMPOSTER = PLAYERS[Math.floor(Math.random() * PLAYERS.length)];
+        }
+        
+        // Create task grid
+        function createTasks() {
+            taskGrid.innerHTML = '';
+            
+            for (let i = 0; i < TOTAL_TASKS; i++) {
+                const task = document.createElement('div');
+                task.className = 'task glass-card';
+                task.textContent = `Task ${i + 1}`;
+                task.addEventListener('click', () => toggleTask(task));
+                taskGrid.appendChild(task);
+            }
+        }
+        
+        // Toggle task completion
+        function toggleTask(taskElement) {
+            const wasCompleted = taskElement.classList.contains('completed');
+            
+            if (wasCompleted) {
+                taskElement.classList.remove('completed');
+                completedTasks--;
+            } else {
+                taskElement.classList.add('completed');
+                completedTasks++;
+            }
+            
+            updateProgress();
+        }
+        
+        // Update progress display
+        function updateProgress() {
+            const progress = (completedTasks / TOTAL_TASKS) * 100;
+            progressFill.style.width = `${progress}%`;
+            progressText.textContent = `${completedTasks}/${TOTAL_TASKS}`;
+        }
+        
+        // Update player display
+        function updatePlayerDisplay() {
+            isRoleRevealed = false;
+            
+            currentPlayer.textContent = PLAYERS[currentPlayerIndex];
+            roleDisplay.className = 'role';
+            roleDisplay.textContent = '';
+            roleIcon.className = 'role-icon';
+            roleIcon.style.backgroundImage = '';
+            
+            showRoleBtn.disabled = false;
+            showRoleBtn.textContent = 'Reveal Role';
+        }
+        
+        // Reveal role for current player
+        function revealRole() {
+            if (isRoleRevealed) return;
+            
+            const player = PLAYERS[currentPlayerIndex];
+            const isImposter = player === IMPOSTER;
+            
+            // Set role display
+            roleDisplay.textContent = isImposter ? 'IMPOSTER' : 'CREWMATE';
+            roleDisplay.className = `role ${isImposter ? 'imposter' : 'crewmate'}`;
+            
+            // Set role icon
+            roleIcon.className = `role-icon ${isImposter ? 'imposter' : 'crewmate'}`;
+            roleIcon.style.backgroundImage = isImposter 
+                ? 'url("https://cdn-icons-png.flaticon.com/512/2583/2583344.png")' 
+                : 'url("https://cdn-icons-png.flaticon.com/512/2583/2583329.png")';
+            
+            // Disable button during reveal
+            showRoleBtn.disabled = true;
+            showRoleBtn.textContent = isImposter ? 'IMPOSTER!' : 'Crewmate';
+            
+            // Animate elements
+            setTimeout(() => {
+                roleDisplay.classList.add('show');
+                roleIcon.classList.add('show');
+            }, 50);
+            
+            isRoleRevealed = true;
+        }
+        
+        // Move to next player
+        function nextPlayer() {
+            if (!isRoleRevealed) {
+                revealRole();
+                setTimeout(() => {
+                    advancePlayer();
+                }, 1500);
+            } else {
+                advancePlayer();
+            }
+        }
+        
+        function advancePlayer() {
+            currentPlayerIndex = (currentPlayerIndex + 1) % PLAYERS.length;
+            
+            // Check if all players have been revealed
+            if (currentPlayerIndex === 0) {
+                allPlayersRevealed = true;
+                showRoundComplete();
+            } else {
+                updatePlayerDisplay();
+            }
+        }
+        
+        // Show round complete message
+        function showRoundComplete() {
+            roundComplete.classList.add('active');
+            
+            setTimeout(() => {
+                roundComplete.classList.remove('active');
+                startNewRound();
+            }, 3000);
+        }
+        
+        // Start a new round
+        function startNewRound() {
+            // Reset player index
+            currentPlayerIndex = 0;
+            
+            // Select new random imposter
+            selectRandomImposter();
+            
+            // Reset tasks
+            document.querySelectorAll('.task').forEach(task => {
+                task.classList.remove('completed');
+            });
+            completedTasks = 0;
+            updateProgress();
+            
+            // Update player display
+            allPlayersRevealed = false;
+            updatePlayerDisplay();
+        }
+        
+        // Activate sabotage
+        function activateSabotage(type) {
+            if (sabotageActive) return;
+            
+            sabotageActive = true;
+            sabotageBtn.disabled = true;
+            
+            // Set message based on sabotage type
+            const message = type === 'naira' 
+                ? "Naira's Room - 2 people must have hands on paper" 
+                : "Dining Table - 2 people must sit down";
+            
+            timerMessage.textContent = message;
+            
+            // Set the appropriate video based on sabotage type
+            const videoId = type === 'naira' 
+                ? 'ZrXA0JoOuwE' 
+                : '-puHyEdltnM';
+            
+            // Load and play the sabotage video
+            if (sabotageVideoPlayer) {
+                sabotageVideoPlayer.loadVideoById(videoId);
+                sabotageVideo.classList.add('active');
+            }
+        }
+        
+        // Schedule sabotage with delay
+        function scheduleSabotage(type) {
+            const delay = parseInt(sabotageDelayInput.value) * 1000;
+            
+            // Save delay setting
+            sabotageDelay = sabotageDelayInput.value;
+            localStorage.setItem('sabotageDelay', sabotageDelay);
+            
+            if (delay === 0) {
+                activateSabotage(type);
+            } else {
+                setTimeout(() => {
+                    activateSabotage(type);
+                }, delay);
+            }
+            
+            sabotageModal.classList.remove('active');
+        }
+        
         // Event Listeners
-        openModalBtn.addEventListener('click', (e) => {
-            e.preventDefault(); // Prevent default anchor behavior
-            openModal();
-        });
-
-        closeModalBtn.addEventListener('click', closeModal);
-
-        // Close modal if user clicks outside the modal content
-        window.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                closeModal();
+        resetBtn.addEventListener('click', () => {
+            // Reset tasks
+            document.querySelectorAll('.task').forEach(task => {
+                task.classList.remove('completed');
+            });
+            completedTasks = 0;
+            updateProgress();
+            
+            // Reset player display and choose new imposter
+            currentPlayerIndex = 0;
+            selectRandomImposter();
+            updatePlayerDisplay();
+            
+            // Reset sabotage
+            sabotageActive = false;
+            sabotageBtn.disabled = false;
+            timerContainer.classList.remove('active');
+            sabotageVideo.classList.remove('active');
+            
+            // Reset round state
+            allPlayersRevealed = false;
+            roundComplete.classList.remove('active');
+            
+            // Pause audio
+            if (youtubePlayer) {
+                youtubePlayer.pauseVideo();
+            }
+            if (sabotageVideoPlayer) {
+                sabotageVideoPlayer.pauseVideo();
             }
         });
-
-        // Close modal with the Escape key
-        window.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && modal.style.display === 'block') {
-                closeModal();
+        
+        showRoleBtn.addEventListener('click', revealRole);
+        nextPlayerBtn.addEventListener('click', nextPlayer);
+        
+        // Sabotage button
+        sabotageBtn.addEventListener('click', () => {
+            if (!sabotageActive) {
+                sabotageModal.classList.add('active');
             }
         });
-
-
-        // --- Optional: Smooth scroll for footer links (if you add an id="find" section) ---
-        /*
-        document.querySelectorAll('footer a[href^="#"]').forEach(anchor => {
-             if (anchor.id !== 'exploreFlavorsBtn') { // Exclude the modal button
-                 anchor.addEventListener('click', function (e) {
-                     e.preventDefault();
-                     const targetId = this.getAttribute('href');
-                     try {
-                         const targetElement = document.querySelector(targetId);
-                         if(targetElement) {
-                             targetElement.scrollIntoView({ behavior: 'smooth' });
-                         } else {
-                            console.warn("Smooth scroll target not found:", targetId);
-                         }
-                     } catch(error) {
-                         console.error("Error finding element for smooth scroll:", targetId, error);
-                     }
-                 });
-             }
+        
+        // Role selector button
+        roleSelectorBtn.addEventListener('click', () => {
+            if (!isRoleRevealed) {
+                revealRole();
+            }
         });
-        */
-
+        
+        // Sabotage options
+        nairaRoomOption.addEventListener('click', () => {
+            scheduleSabotage('naira');
+        });
+        
+        diningTableOption.addEventListener('click', () => {
+            scheduleSabotage('dining');
+        });
+        
+        // Now button
+        nowBtn.addEventListener('click', () => {
+            sabotageDelayInput.value = 0;
+        });
+        
+        // Cancel sabotage
+        cancelSabotageBtn.addEventListener('click', () => {
+            sabotageModal.classList.remove('active');
+        });
+        
+        // Close timer
+        closeTimerBtn.addEventListener('click', () => {
+            timerContainer.classList.remove('active');
+            sabotageActive = false;
+            sabotageBtn.disabled = false;
+            
+            // Pause audio
+            if (youtubePlayer) {
+                youtubePlayer.pauseVideo();
+            }
+        });
+        
+        // Initialize app
+        init();
     </script>
-
 </body>
 </html>
