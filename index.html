@@ -1204,12 +1204,13 @@ By signing below, Guest acknowledges and agrees to all terms and conditions of t
         // Load rooms
         function loadRooms() {
             roomsContainer.innerHTML = '<p>Loading rooms...</p>';
+
             database.ref('rooms').once('value')
                 .then(snapshot => {
                     const rooms = snapshot.val();
-                    console.log('Rooms loaded:', rooms); // Debug log
-                    roomsContainer.innerHTML = '';
-                    if (rooms) {
+                    roomsContainer.innerHTML = ''; // Clear loading message
+                    
+                    if (rooms && Object.keys(rooms).length > 0) {
                         Object.keys(rooms).forEach(key => {
                             const room = rooms[key];
                             const roomCard = document.createElement('div');
@@ -1220,16 +1221,20 @@ By signing below, Guest acknowledges and agrees to all terms and conditions of t
                                     <h3 class="room-title">${room.name || 'Room'}</h3>
                                     <div class="room-price">$${room.price || '0'}/night</div>
                                     <div class="room-features">
-                                        <h4>Features:</h4>
-                                        <ul>
-                                            ${(room.features || []).map(feature => `<li>${feature}</li>`).join('')}
-                                        </ul>
+                                        ${(room.features || []).map(feature => `
+                                            <div class="room-feature">
+                                                <i class="fas fa-check"></i>
+                                                <span>${feature}</span>
+                                            </div>
+                                        `).join('')}
                                     </div>
                                     <button class="view-room-btn" data-id="${key}">View Room</button>
                                 </div>
                             `;
                             roomsContainer.appendChild(roomCard);
                         });
+
+                        // Add event listeners to view room buttons
                         document.querySelectorAll('.view-room-btn').forEach(button => {
                             button.addEventListener('click', () => {
                                 const roomId = button.getAttribute('data-id');
@@ -1493,19 +1498,22 @@ By signing below, Guest acknowledges and agrees to all terms and conditions of t
         // Load user bookings
         function loadBookings() {
             if (!currentUser) return;
+
             bookingsContainer.innerHTML = '<p>Loading your bookings...</p>';
+
             database.ref(`users/${currentUser.uid}/bookings`).once('value')
                 .then(snapshot => {
                     const bookingIds = snapshot.val();
-                    console.log('Booking IDs loaded:', bookingIds); // Debug log
-                    if (bookingIds) {
+                    bookingsContainer.innerHTML = ''; // Clear loading message
+                    
+                    if (bookingIds && Object.keys(bookingIds).length > 0) {
                         const promises = Object.keys(bookingIds).map(bookingId => {
                             return database.ref(`bookings/${bookingId}`).once('value');
                         });
+
                         Promise.all(promises)
                             .then(snapshots => {
                                 const bookings = snapshots.map(snap => snap.val());
-                                console.log('Bookings loaded:', bookings); // Debug log
                                 displayBookings(bookings);
                             });
                     } else {
@@ -1521,14 +1529,18 @@ By signing below, Guest acknowledges and agrees to all terms and conditions of t
         // Display bookings
         function displayBookings(bookings) {
             bookingsContainer.innerHTML = '';
+            
             if (!bookings || bookings.length === 0) {
                 bookingsContainer.innerHTML = '<p>You have no bookings yet.</p>';
                 return;
             }
+
             bookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
             bookings.forEach(booking => {
                 const checkIn = new Date(booking.checkIn);
                 const checkOut = new Date(booking.checkOut);
+                
                 const bookingCard = document.createElement('div');
                 bookingCard.className = 'room-card';
                 bookingCard.innerHTML = `
@@ -1567,8 +1579,9 @@ By signing below, Guest acknowledges and agrees to all terms and conditions of t
             database.ref('bookings').once('value')
                 .then(snapshot => {
                     const bookings = snapshot.val();
-                    if (bookings) {
-                        adminBookingsTable.innerHTML = '';
+                    adminBookingsTable.innerHTML = '';
+                    
+                    if (bookings && Object.keys(bookings).length > 0) {
                         Object.keys(bookings).forEach(bookingId => {
                             const booking = bookings[bookingId];
                             const checkIn = new Date(booking.checkIn);
@@ -1725,7 +1738,9 @@ By signing below, Guest acknowledges and agrees to all terms and conditions of t
             database.ref(`users/${currentUser.uid}/forms`).once('value')
                 .then(snapshot => {
                     const formIds = snapshot.val();
-                    if (formIds) {
+                    formsContainer.innerHTML = ''; // Clear loading message
+                    
+                    if (formIds && Object.keys(formIds).length > 0) {
                         const promises = Object.keys(formIds).map(formId => {
                             return database.ref(`forms/${formId}`).once('value');
                         });
@@ -1749,7 +1764,7 @@ By signing below, Guest acknowledges and agrees to all terms and conditions of t
         function displayForms(forms) {
             formsContainer.innerHTML = '';
             
-            if (forms.length === 0) {
+            if (!forms || forms.length === 0) {
                 formsContainer.innerHTML = '<p>You have no pending forms.</p>';
                 return;
             }
