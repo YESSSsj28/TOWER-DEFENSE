@@ -1017,6 +1017,13 @@ By signing below, Guest acknowledges and agrees to all terms and conditions of t
         firebase.initializeApp(firebaseConfig);
         const auth = firebase.auth();
         const database = firebase.database();
+        // Add this right after firebase.initializeApp()
+firebase.database().ref('.info/connected').on('value', (snapshot) => {
+    if (snapshot.val() !== true) {
+        console.error("Not connected to Firebase");
+        alert("Connection error. Please check your internet.");
+    }
+});
 
         // DOM Elements
         const authModal = document.getElementById('auth-modal');
@@ -1166,6 +1173,10 @@ By signing below, Guest acknowledges and agrees to all terms and conditions of t
             e.preventDefault();
             showSection('rooms');
             loadRooms();
+            .catch(error => {
+    console.error("Error loading rooms:", error);
+    roomsContainer.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--danger)">Failed to load rooms. Please refresh.</div>';
+});
         });
 
         bookingsLink.addEventListener('click', (e) => {
@@ -1203,7 +1214,7 @@ By signing below, Guest acknowledges and agrees to all terms and conditions of t
 
         // Load rooms
         function loadRooms() {
-            roomsContainer.innerHTML = '<p>Loading rooms...</p>';
+            roomsContainer.innerHTML = '<div style="text-align:center;padding:2rem;"><i class="fas fa-spinner fa-spin"></i><p>Loading rooms...</p></div>';
 
             database.ref('rooms').once('value')
                 .then(snapshot => {
@@ -1497,10 +1508,12 @@ By signing below, Guest acknowledges and agrees to all terms and conditions of t
 
         // Load user bookings
         function loadBookings() {
+            .catch(error => {
+    console.error("Error loading bookings:", error);
+    bookingsContainer.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--danger)">Failed to load bookings. Please refresh.</div>';
+});
             if (!currentUser) return;
-
-            bookingsContainer.innerHTML = '<p>Loading your bookings...</p>';
-
+            bookingsContainer.innerHTML = '<div style="text-align:center;padding:2rem;"><i class="fas fa-spinner fa-spin"></i><p>Loading your bookings...</p></div>';
             database.ref(`users/${currentUser.uid}/bookings`).once('value')
                 .then(snapshot => {
                     const bookingIds = snapshot.val();
@@ -1574,7 +1587,7 @@ By signing below, Guest acknowledges and agrees to all terms and conditions of t
 
         // Load admin bookings
         function loadAdminBookings() {
-            adminBookingsTable.innerHTML = '<tr><td colspan="7">Loading bookings...</td></tr>';
+            adminBookingsTable.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:1rem;"><i class="fas fa-spinner fa-spin"></i> Loading bookings...</td></tr>';
 
             database.ref('bookings').once('value')
                 .then(snapshot => {
@@ -1733,7 +1746,7 @@ By signing below, Guest acknowledges and agrees to all terms and conditions of t
         function loadForms() {
             if (!currentUser) return;
 
-            formsContainer.innerHTML = '<p>Loading your forms...</p>';
+            formsContainer.innerHTML = '<div style="text-align:center;padding:2rem;"><i class="fas fa-spinner fa-spin"></i><p>Loading your forms...</p></div>';
 
             database.ref(`users/${currentUser.uid}/forms`).once('value')
                 .then(snapshot => {
