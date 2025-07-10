@@ -3,1073 +3,2074 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Among Us IRL | Random Imposter</title>
+    <title>Luxury Hotel Booking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@400;600&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #ff5e5e;
-            --primary-dark: #d83f3f;
-            --secondary: #4cc9f0;
-            --bg: #0f172a;
-            --glass: rgba(255, 255, 255, 0.1);
-            --glass-border: rgba(255, 255, 255, 0.2);
-            --success: #4ade80;
-            --crewmate: #4cc9f0;
-            --imposter: #ff5e5e;
-            --danger: #f87171;
+            --primary: #d4af37;
+            --secondary: #1a1a1a;
+            --light: #f8f8f8;
+            --dark: #222;
+            --success: #28a745;
+            --danger: #dc3545;
+            --info: #17a2b8;
         }
 
         * {
+            box-sizing: border-box;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
         }
 
         body {
-            font-family: 'SF Pro Display', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: white;
-            min-height: 100vh;
-            padding: 2rem;
-            background-image: 
-                radial-gradient(at 80% 0%, hsla(189, 100%, 56%, 0.15) 0px, transparent 50%),
-                radial-gradient(at 0% 50%, hsla(355, 100%, 93%, 0.15) 0px, transparent 50%);
+            font-family: 'Montserrat', sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 1.5rem;
+            padding: 0 20px;
         }
 
         header {
-            grid-column: 1 / -1;
-            text-align: center;
-            margin-bottom: 1rem;
-            animation: fadeIn 0.8s ease-out;
+            background-color: var(--secondary);
+            color: white;
+            padding: 1rem 0;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
             display: flex;
-            flex-direction: column;
+            justify-content: space-between;
             align-items: center;
-            gap: 1rem;
         }
 
-        .header-buttons {
+        .logo {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--primary);
+        }
+
+        nav ul {
             display: flex;
-            gap: 1rem;
-            margin-top: 0.5rem;
+            list-style: none;
         }
 
-        h1 {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: 0.5rem;
-            letter-spacing: -0.5px;
+        nav ul li {
+            margin-left: 1.5rem;
         }
 
-        .subtitle {
-            font-size: 1.1rem;
-            opacity: 0.8;
-            font-weight: 400;
+        nav ul li a {
+            color: white;
+            text-decoration: none;
+            transition: color 0.3s;
         }
 
-        .glass-card {
-            background: var(--glass);
-            backdrop-filter: blur(16px) saturate(180%);
-            -webkit-backdrop-filter: blur(16px) saturate(180%);
-            border-radius: 20px;
-            border: 1px solid var(--glass-border);
-            padding: 1.5rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        nav ul li a:hover {
+            color: var(--primary);
         }
 
-        .glass-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+        .auth-buttons button {
+            background: var(--primary);
+            color: var(--secondary);
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-left: 1rem;
         }
 
-        /* TASKS SECTION */
-        .tasks-section {
-            grid-column: 1;
-        }
-
-        .progress-container {
+        /* Auth Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
             width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 100%;
+            max-width: 400px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin-bottom: 1.5rem;
         }
 
-        .progress-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 0.5rem;
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
-        .progress-bar {
-            height: 12px;
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 100px;
-            overflow: hidden;
-            position: relative;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            border-radius: 100px;
-            width: 0%;
-            transition: width 0.6s cubic-bezier(0.65, 0, 0.35, 1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .progress-fill::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(
-                90deg,
-                rgba(255, 255, 255, 0) 0%,
-                rgba(255, 255, 255, 0.3) 50%,
-                rgba(255, 255, 255, 0) 100%
-            );
-            animation: shimmer 2s infinite;
-        }
-
-        .task-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
-            gap: 1rem;
-        }
-
-        .task {
-            aspect-ratio: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            text-align: center;
-            padding: 1rem;
-            cursor: pointer;
-            user-select: none;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            overflow: hidden;
-            font-weight: 500;
-            border-radius: 16px;
-        }
-
-        .task::before {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .task:hover::before {
-            opacity: 1;
-        }
-
-        .task.completed {
-            background: var(--success);
-            transform: translateY(-5px);
-            box-shadow: 0 10px 20px rgba(74, 222, 128, 0.3);
-        }
-
-        .task.completed::after {
-            content: '✓';
-            position: absolute;
+        .modal-title {
             font-size: 1.5rem;
-            font-weight: bold;
-            animation: checkIn 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            color: var(--secondary);
+            font-family: 'Playfair Display', serif;
         }
 
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-            margin-top: 1.5rem;
+        .close-modal {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: var(--secondary);
         }
 
-        /* IMPOSTER SECTION */
-        .imposter-section {
-            grid-column: 2;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .role-display {
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem 0;
-            position: relative;
-        }
-
-        .player-name {
-            font-size: 2rem;
-            font-weight: 700;
+        .form-group {
             margin-bottom: 1rem;
-            background: linear-gradient(90deg, #fff, #eee);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            text-align: center;
         }
 
-        .role {
-            font-size: 3rem;
-            font-weight: 800;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-            opacity: 0;
-            transform: scale(0.8);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            text-align: center;
-            margin: 1rem 0;
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
         }
 
-        .role.show {
-            opacity: 1;
-            transform: scale(1);
+        .form-group input {
+            width: 100%;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
         }
 
-        .role.crewmate {
-            color: var(--crewmate);
-            text-shadow: 0 0 20px rgba(76, 201, 240, 0.5);
-        }
-
-        .role.imposter {
-            color: var(--imposter);
-            text-shadow: 0 0 20px rgba(255, 94, 94, 0.5);
-        }
-
-        .role-icon {
-            width: 120px;
-            height: 120px;
-            margin: 1rem auto;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: center;
-            opacity: 0;
-            transform: scale(0.5);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .role-icon.show {
-            opacity: 1;
-            transform: scale(1);
+        .form-actions {
+            margin-top: 1.5rem;
         }
 
         .btn {
             padding: 0.8rem 1.5rem;
             border: none;
-            border-radius: 100px;
+            border-radius: 4px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            overflow: hidden;
+            transition: all 0.3s;
         }
 
         .btn-primary {
-            background: linear-gradient(90deg, var(--primary), var(--primary-dark));
-            color: white;
-            box-shadow: 0 4px 15px rgba(216, 63, 63, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(216, 63, 63, 0.4);
-        }
-
-        .btn-primary:active {
-            transform: translateY(0);
+            background: var(--primary);
+            color: var(--secondary);
         }
 
         .btn-secondary {
-            background: rgba(255, 255, 255, 0.1);
+            background: var(--secondary);
             color: white;
-            border: 1px solid rgba(255, 255, 255, 0.2);
         }
 
-        .btn-secondary:hover {
-            background: rgba(255, 255, 255, 0.2);
+        .btn-block {
+            display: block;
+            width: 100%;
         }
 
-        .btn-danger {
-            background: linear-gradient(90deg, var(--danger), var(--primary-dark));
-            color: white;
-            box-shadow: 0 4px 15px rgba(216, 63, 63, 0.3);
+        .error-message {
+            color: var(--danger);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
         }
 
-        .btn-danger:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(216, 63, 63, 0.4);
+        .success-message {
+            color: var(--success);
+            font-size: 0.9rem;
+            margin-top: 0.5rem;
         }
 
-        /* Sabotage modal */
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0, 0, 0, 0.7);
-            backdrop-filter: blur(5px);
+        .tabs {
             display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .modal-overlay.active {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .modal {
-            background: var(--glass);
-            backdrop-filter: blur(16px) saturate(180%);
-            border-radius: 20px;
-            border: 1px solid var(--glass-border);
-            padding: 2rem;
-            max-width: 500px;
-            width: 90%;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            transform: translateY(20px);
-            transition: transform 0.3s ease;
-        }
-
-        .modal-overlay.active .modal {
-            transform: translateY(0);
-        }
-
-        .modal-header {
             margin-bottom: 1.5rem;
-            text-align: center;
+            border-bottom: 1px solid #ddd;
         }
 
-        .modal-title {
-            font-size: 1.5rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
-
-        .modal-body {
-            margin-bottom: 2rem;
-        }
-
-        .modal-actions {
-            display: flex;
-            justify-content: center;
-            gap: 1rem;
-        }
-
-        .sabotage-option {
-            background: var(--glass);
-            border: 1px solid var(--glass-border);
-            border-radius: 12px;
-            padding: 1.5rem;
-            margin-bottom: 1rem;
+        .tab {
+            padding: 0.8rem 1.5rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
         }
 
-        .sabotage-option:hover {
-            background: rgba(255, 255, 255, 0.15);
-            transform: translateY(-3px);
+        .tab.active {
+            border-bottom-color: var(--primary);
+            font-weight: 600;
         }
 
-        .sabotage-option h3 {
-            margin-bottom: 0.5rem;
-            color: var(--imposter);
-        }
-
-        .sabotage-option p {
-            opacity: 0.8;
-            font-size: 0.9rem;
-        }
-
-        .time-input {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-            margin-top: 1.5rem;
-        }
-
-        .time-input input {
-            background: rgba(255, 255, 255, 0.1);
-            border: 1px solid var(--glass-border);
-            border-radius: 8px;
-            padding: 0.8rem;
-            color: white;
-            font-size: 1rem;
-            width: 80px;
-            text-align: center;
-        }
-
-        .time-input label {
-            font-size: 0.9rem;
-            opacity: 0.8;
-        }
-
-        /* Timer */
-        .timer-container {
-            position: fixed;
-            bottom: 2rem;
-            right: 2rem;
-            background: var(--glass);
-            backdrop-filter: blur(16px) saturate(180%);
-            border-radius: 20px;
-            border: 1px solid var(--glass-border);
-            padding: 1rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-            z-index: 100;
+        .tab-content {
             display: none;
         }
 
-        .timer-container.active {
+        .tab-content.active {
             display: block;
-            animation: pulse 1.5s infinite;
         }
 
-        .timer-header {
+        /* Rooms Section */
+        .rooms-section {
+            padding: 3rem 0;
+        }
+
+        .section-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            color: var(--secondary);
+        }
+
+        .rooms-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+
+        .room-card {
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .room-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .room-image {
+            height: 200px;
+            width: 100%;
+            object-fit: cover;
+        }
+
+        .room-info {
+            padding: 1.5rem;
+        }
+
+        .room-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.3rem;
+            margin-bottom: 0.5rem;
+            color: var(--secondary);
+        }
+
+        .room-price {
+            font-weight: 600;
+            color: var(--primary);
+            font-size: 1.2rem;
+            margin-bottom: 1rem;
+        }
+
+        .room-features {
+            margin-bottom: 1.5rem;
+        }
+
+        .room-feature {
             display: flex;
-            justify-content: space-between;
             align-items: center;
             margin-bottom: 0.5rem;
         }
 
-        .timer-title {
-            font-weight: 600;
-            color: var(--imposter);
+        .room-feature i {
+            margin-right: 0.5rem;
+            color: var(--primary);
         }
 
-        .timer-close {
-            background: none;
+        .view-room-btn {
+            background: var(--primary);
+            color: var(--secondary);
             border: none;
-            color: white;
-            font-size: 1.2rem;
+            padding: 0.8rem 1.5rem;
+            border-radius: 4px;
             cursor: pointer;
-            opacity: 0.7;
+            font-weight: 600;
+            width: 100%;
+            transition: background 0.3s;
         }
 
-        .timer-close:hover {
-            opacity: 1;
+        .view-room-btn:hover {
+            background: #c9a227;
         }
 
-        /* Round complete message */
-        .round-complete {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: var(--glass);
-            backdrop-filter: blur(16px) saturate(180%);
-            border-radius: 20px;
-            border: 1px solid var(--glass-border);
+        /* Room Details Modal */
+        .room-details-modal {
+            max-width: 800px;
+        }
+
+        .room-details-content {
+            display: flex;
+            flex-direction: column;
+        }
+
+        @media (min-width: 768px) {
+            .room-details-content {
+                flex-direction: row;
+            }
+        }
+
+        .room-details-image {
+            flex: 1;
+            min-height: 300px;
+            background-size: cover;
+            background-position: center;
+        }
+
+        .room-details-info {
+            flex: 1;
             padding: 2rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-            text-align: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
         }
 
-        .round-complete.active {
-            opacity: 1;
+        .booking-form {
+            margin-top: 2rem;
         }
 
-        .round-complete h2 {
-            font-size: 2rem;
+        .days-selector {
+            display: flex;
+            align-items: center;
             margin-bottom: 1rem;
-            background: linear-gradient(90deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
         }
 
-        /* YouTube embed */
-        .youtube-embed {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .days-selector button {
+            background: #ddd;
+            border: none;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .days-selector input {
+            width: 60px;
+            text-align: center;
+            margin: 0 0.5rem;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+
+        .total-price {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin: 1rem 0;
+            color: var(--primary);
+        }
+
+        /* Booking Receipt */
+        .receipt {
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            max-width: 600px;
+            margin: 0 auto;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .receipt-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+        }
+
+        .receipt-details {
+            margin-bottom: 2rem;
+        }
+
+        .receipt-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.8rem 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .receipt-row:last-child {
+            border-bottom: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+
+        .receipt-label {
+            color: #666;
+        }
+
+        .receipt-value {
+            text-align: right;
+        }
+
+        .receipt-actions {
+            margin-top: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+
+        /* Admin Dashboard */
+        .admin-dashboard {
+            padding: 2rem 0;
+        }
+
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .admin-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: var(--secondary);
+        }
+
+        .bookings-table {
             width: 100%;
-            height: 100%;
-            z-index: -1;
-            opacity: 0;
-            pointer-events: none;
+            border-collapse: collapse;
+            background: white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+            border-radius: 8px;
+            overflow: hidden;
         }
 
-        .sabotage-video {
-            position: fixed;
-            top: 0;
-            left: 0;
+        .bookings-table th, .bookings-table td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        .bookings-table th {
+            background: var(--secondary);
+            color: white;
+            font-weight: 600;
+        }
+
+        .bookings-table tr:last-child td {
+            border-bottom: none;
+        }
+
+        .status-badge {
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-confirmed {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-cancelled {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .action-btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 0.5rem;
+            font-size: 0.8rem;
+        }
+
+        .btn-sm {
+            padding: 0.3rem 0.8rem;
+            font-size: 0.8rem;
+        }
+
+        /* Form Modal */
+        .form-modal {
+            max-width: 600px;
+        }
+
+        .form-content {
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .form-field {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-field label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .form-field input, .form-field textarea, .form-field select {
             width: 100%;
-            height: 100%;
-            z-index: 999;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
+            padding: 0.8rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
         }
 
-        .sabotage-video.active {
-            opacity: 1;
-            z-index: 1001;
+        .form-field textarea {
+            min-height: 150px;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
+        .signature-pad {
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            background: white;
         }
 
-        @keyframes checkIn {
-            0% { opacity: 0; transform: scale(0); }
-            80% { transform: scale(1.2); }
-            100% { opacity: 1; transform: scale(1); }
+        .clear-signature {
+            background: var(--danger);
+            color: white;
+            margin-bottom: 1rem;
         }
 
-        @keyframes shimmer {
-            0% { transform: translateX(-100%); }
-            100% { transform: translateX(100%); }
+        /* Guest Forms */
+        .guest-forms {
+            padding: 2rem 0;
         }
 
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
+        .form-card {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
         }
 
-        /* Responsive adjustments */
-        @media (max-width: 1024px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-            
-            .imposter-section {
-                grid-column: 1;
-                margin-top: 2rem;
-            }
+        .form-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #eee;
         }
 
+        .form-card-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.2rem;
+            color: var(--secondary);
+        }
+
+        .form-card-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .form-card-body {
+            margin-bottom: 1.5rem;
+        }
+
+        /* Responsive */
         @media (max-width: 768px) {
-            .task-grid {
-                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            }
-            
-            h1 {
-                font-size: 2rem;
-            }
-            
-            .player-name {
-                font-size: 1.5rem;
-            }
-            
-            .role {
-                font-size: 2rem;
-            }
-
-            .header-buttons {
+            .header-content {
                 flex-direction: column;
-                width: 100%;
+                text-align: center;
             }
 
-            .header-buttons .btn {
-                width: 100%;
+            nav ul {
+                margin-top: 1rem;
+                justify-content: center;
+            }
+
+            .auth-buttons {
+                margin-top: 1rem;
+            }
+
+            .room-details-content {
+                flex-direction: column;
+            }
+
+            .room-details-image {
+                min-height: 200px;
+            }
+
+            .bookings-table {
+                display: block;
+                overflow-x: auto;
             }
         }
     </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
 </head>
 <body>
-    <!-- YouTube embed for audio (hidden) -->
-    <div class="youtube-embed">
-        <iframe width="100%" height="100%" src="https://www.youtube.com/embed/WernYF9GmAo?enablejsapi=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen id="youtubeIframe"></iframe>
-    </div>
-
-    <!-- Sabotage video embed -->
-    <div class="sabotage-video" id="sabotageVideo">
-        <iframe width="100%" height="100%" src="https://www.youtube.com/embed/ZrXA0JoOuwE?enablejsapi=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen id="sabotageVideoIframe"></iframe>
-    </div>
-
-    <!-- Timer display -->
-    <div class="timer-container" id="timerContainer">
-        <div class="timer-header">
-            <div class="timer-title">SABOTAGE ACTIVE</div>
-            <button class="timer-close" id="closeTimerBtn">×</button>
+    <!-- Header -->
+    <header>
+        <div class="container header-content">
+            <div class="logo">Luxury Suites</div>
+            <nav>
+                <ul>
+                    <li><a href="#" id="home-link">Home</a></li>
+                    <li><a href="#" id="rooms-link">Rooms</a></li>
+                    <li><a href="#" id="bookings-link" style="display:none;">My Bookings</a></li>
+                    <li><a href="#" id="admin-link" style="display:none;">Admin</a></li>
+                </ul>
+            </nav>
+            <div class="auth-buttons">
+                <span id="welcome-message"></span>
+                <button id="login-btn">Login</button>
+                <button id="signup-btn">Sign Up</button>
+                <button id="logout-btn" style="display:none;">Logout</button>
+            </div>
         </div>
-        <div id="timerMessage"></div>
-    </div>
+    </header>
 
-    <!-- Round complete message -->
-    <div class="round-complete" id="roundComplete">
-        <h2>Round Complete!</h2>
-        <p>Starting next round in 3 seconds...</p>
-    </div>
-
-    <div class="container">
-        <header>
-            <div>
-                <h1>Among Us IRL</h1>
-                <p class="subtitle">Complete 15 tasks. Random imposter each round!</p>
-            </div>
-            <div class="header-buttons">
-                <button class="btn btn-danger glass-card" id="sabotageBtn">SABOTAGE</button>
-                <button class="btn btn-secondary glass-card" id="roleSelectorBtn">ROLE SELECTOR</button>
-            </div>
-        </header>
-
-        <!-- TASKS SECTION -->
-        <section class="tasks-section glass-card">
-            <div class="progress-container">
-                <div class="progress-header">
-                    <span>Mission Progress</span>
-                    <span id="progressText">0/15</span>
-                </div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill"></div>
+    <!-- Main Content -->
+    <main class="container">
+        <!-- Home Section -->
+        <section id="home-section">
+            <div class="hero" style="background: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80') center/cover; height: 60vh; display: flex; align-items: center; justify-content: center; color: white; text-align: center; margin-bottom: 3rem;">
+                <div style="background: rgba(0,0,0,0.6); padding: 2rem; border-radius: 8px;">
+                    <h1 style="font-family: 'Playfair Display', serif; font-size: 2.5rem; margin-bottom: 1rem;">Welcome to Luxury Suites</h1>
+                    <p style="font-size: 1.2rem; margin-bottom: 1.5rem;">Experience unparalleled comfort and service</p>
+                    <button id="book-now-btn" class="btn btn-primary" style="padding: 1rem 2rem; font-size: 1.1rem;">Book Your Stay</button>
                 </div>
             </div>
 
-            <div class="task-grid" id="taskGrid">
-                <!-- Tasks will be added here -->
+            <div style="text-align: center; margin-bottom: 3rem;">
+                <h2 class="section-title">Our Amenities</h2>
+                <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 2rem;">
+                    <div style="flex: 1; min-width: 200px; background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
+                        <i class="fas fa-wifi" style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                        <h3 style="margin-bottom: 0.5rem;">Free WiFi</h3>
+                        <p>High-speed internet throughout the property</p>
+                    </div>
+                    <div style="flex: 1; min-width: 200px; background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
+                        <i class="fas fa-utensils" style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                        <h3 style="margin-bottom: 0.5rem;">Restaurant</h3>
+                        <p>Gourmet dining options available</p>
+                    </div>
+                    <div style="flex: 1; min-width: 200px; background: white; padding: 1.5rem; border-radius: 8px; box-shadow: 0 3px 10px rgba(0,0,0,0.1);">
+                        <i class="fas fa-swimming-pool" style="font-size: 2rem; color: var(--primary); margin-bottom: 1rem;"></i>
+                        <h3 style="margin-bottom: 0.5rem;">Pool</h3>
+                        <p>Heated outdoor pool available year-round</p>
+                    </div>
+                </div>
             </div>
+        </section>
 
-            <div class="controls">
-                <button class="btn btn-primary" id="resetBtn">Reset All Tasks</button>
+        <!-- Rooms Section -->
+        <section id="rooms-section" class="rooms-section" style="display:none;">
+            <h2 class="section-title">Our Rooms & Suites</h2>
+            <div class="rooms-grid" id="rooms-container">
+                <!-- Rooms will be loaded here -->
             </div>
         </section>
 
-        <!-- IMPOSTER SECTION -->
-        <section class="imposter-section glass-card">
-            <h2>Role Revealer</h2>
-            
-            <div class="role-display">
-                <div class="player-name" id="currentPlayer">Tap Reveal</div>
-                <div class="role-icon" id="roleIcon"></div>
-                <div class="role" id="roleDisplay"></div>
-            </div>
-            
-            <div class="controls">
-                <button class="btn btn-primary" id="showRoleBtn">Reveal Role</button>
-                <button class="btn btn-secondary" id="nextPlayerBtn">Next Player</button>
+        <!-- Bookings Section -->
+        <section id="bookings-section" style="display:none;">
+            <h2 class="section-title">My Bookings</h2>
+            <div id="bookings-container">
+                <!-- Bookings will be loaded here -->
             </div>
         </section>
-    </div>
 
-    <!-- Sabotage Modal -->
-    <div class="modal-overlay" id="sabotageModal">
-        <div class="modal glass-card">
+        <!-- Admin Section -->
+        <section id="admin-section" style="display:none;">
+            <div class="admin-header">
+                <h2 class="admin-title">Admin Dashboard</h2>
+                <button id="send-form-btn" class="btn btn-primary">Send New Form</button>
+            </div>
+            <div class="admin-dashboard">
+                <h3>All Bookings</h3>
+                <div style="overflow-x: auto;">
+                    <table class="bookings-table">
+                        <thead>
+                            <tr>
+                                <th>Booking ID</th>
+                                <th>Guest</th>
+                                <th>Room</th>
+                                <th>Dates</th>
+                                <th>Total</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-bookings-table">
+                            <!-- Bookings will be loaded here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Guest Forms Section -->
+        <section id="forms-section" style="display:none;">
+            <h2 class="section-title">Your Forms</h2>
+            <div id="forms-container">
+                <!-- Forms will be loaded here -->
+            </div>
+        </section>
+    </main>
+
+    <!-- Auth Modals -->
+    <div id="auth-modal" class="modal">
+        <div class="modal-content">
             <div class="modal-header">
-                <h2 class="modal-title">SABOTAGE</h2>
-                <p>Choose your sabotage type:</p>
+                <h3 class="modal-title">Welcome</h3>
+                <button class="close-modal">&times;</button>
             </div>
-            <div class="modal-body">
-                <div class="sabotage-option" id="nairaRoomOption">
-                    <h3>Naira's Room</h3>
-                    <p>2 people must have their hands on paper until timer ends</p>
-                </div>
-                <div class="sabotage-option" id="diningTableOption">
-                    <h3>Dining Table</h3>
-                    <p>2 people must sit down until timer ends</p>
-                </div>
-                <div class="time-input">
-                    <label for="sabotageDelay">Delay (seconds):</label>
-                    <input type="number" id="sabotageDelay" min="0" max="300" value="0">
-                    <button class="btn btn-primary" id="nowBtn">Now</button>
-                </div>
+            <div class="tabs">
+                <div class="tab active" id="modal-login-tab">Login</div>
+                <div class="tab" id="modal-signup-tab">Sign Up</div>
             </div>
-            <div class="modal-actions">
-                <button class="btn btn-secondary" id="cancelSabotageBtn">Cancel</button>
+            <div class="tab-content active" id="login-tab-content">
+                <form id="login-form">
+                    <div class="form-group">
+                        <label for="login-username">Username</label>
+                        <input type="text" id="login-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="login-password">Password</label>
+                        <input type="password" id="login-password" required>
+                    </div>
+                    <div id="login-error" class="error-message"></div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-block">Login</button>
+                    </div>
+                </form>
+            </div>
+            <div class="tab-content" id="signup-tab-content">
+                <form id="signup-form">
+                    <div class="form-group">
+                        <label for="signup-username">Username</label>
+                        <input type="text" id="signup-username" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="signup-password">Password</label>
+                        <input type="password" id="signup-password" required>
+                        <small>Minimum 6 characters</small>
+                    </div>
+                    <div id="signup-error" class="error-message"></div>
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-primary btn-block">Sign Up</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
+
+    <!-- Room Details Modal -->
+    <div id="room-modal" class="modal">
+        <div class="modal-content room-details-modal">
+            <div class="modal-header">
+                <h3 class="modal-title" id="room-modal-title">Room Details</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="room-details-content">
+                <div class="room-details-image" id="room-modal-image" style="background: #eee;"></div>
+                <div class="room-details-info">
+                    <div id="room-modal-description">
+                        <!-- Room details will be loaded here -->
+                    </div>
+                    <div class="booking-form">
+                        <h4>Book This Room</h4>
+                        <div class="form-group">
+                            <label>Number of Days</label>
+                            <div class="days-selector">
+                                <button type="button" id="decrease-days">-</button>
+                                <input type="number" id="days-count" min="1" value="1">
+                                <button type="button" id="increase-days">+</button>
+                            </div>
+                        </div>
+                        <div class="total-price">
+                            Total: $<span id="total-price">0</span>
+                        </div>
+                        <div id="guest-info-form" style="display:none;">
+                            <div class="form-group">
+                                <label for="guest-name">Full Name</label>
+                                <input type="text" id="guest-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="guest-email">Email</label>
+                                <input type="email" id="guest-email" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="guest-phone">Phone Number</label>
+                                <input type="tel" id="guest-phone" required>
+                            </div>
+                            <div class="form-group" id="save-info-container" style="display:none;">
+                                <label>
+                                    <input type="checkbox" id="save-info"> Save my information for future bookings
+                                </label>
+                            </div>
+                            <div class="form-group" id="use-saved-info-container" style="display:none;">
+                                <label>
+                                    <input type="checkbox" id="use-saved-info" checked> Use my saved information
+                                </label>
+                            </div>
+                        </div>
+                        <div id="payment-options" style="display:none;">
+                            <h4>Payment Method</h4>
+                            <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                                <button type="button" class="btn btn-secondary" style="flex:1;" data-payment="credit">Credit Card</button>
+                                <button type="button" class="btn btn-secondary" style="flex:1;" data-payment="paypal">PayPal</button>
+                            </div>
+                            <div id="credit-card-form" style="display:none;">
+                                <div class="form-group">
+                                    <label for="card-number">Card Number</label>
+                                    <input type="text" id="card-number" placeholder="1234 5678 9012 3456">
+                                </div>
+                                <div class="form-group">
+                                    <label for="card-expiry">Expiry Date</label>
+                                    <input type="text" id="card-expiry" placeholder="MM/YY">
+                                </div>
+                                <div class="form-group">
+                                    <label for="card-cvc">CVC</label>
+                                    <input type="text" id="card-cvc" placeholder="123">
+                                </div>
+                            </div>
+                            <div id="paypal-form" style="display:none;">
+                                <p>You will be redirected to PayPal to complete your payment</p>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="button" id="back-to-room-btn" class="btn btn-secondary" style="display:none;">Back</button>
+                            <button type="button" id="proceed-to-payment-btn" class="btn btn-primary">Book Now</button>
+                            <button type="button" id="confirm-booking-btn" class="btn btn-primary" style="display:none;">Confirm Booking</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Booking Receipt Modal -->
+    <div id="receipt-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Booking Confirmation</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="receipt">
+                <div class="receipt-header">
+                    <h3 class="receipt-title">Luxury Suites</h3>
+                    <p>123 Luxury Avenue, Suite City</p>
+                    <p>Phone: (555) 123-4567</p>
+                </div>
+                <div class="receipt-details">
+                    <div class="receipt-row">
+                        <span class="receipt-label">Booking Reference:</span>
+                        <span class="receipt-value" id="receipt-id">#00000</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="receipt-label">Guest Name:</span>
+                        <span class="receipt-value" id="receipt-name">John Doe</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="receipt-label">Room Type:</span>
+                        <span class="receipt-value" id="receipt-room">Deluxe Suite</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="receipt-label">Check-in:</span>
+                        <span class="receipt-value" id="receipt-checkin">01 Jan 2023</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="receipt-label">Check-out:</span>
+                        <span class="receipt-value" id="receipt-checkout">05 Jan 2023</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="receipt-label">Nights:</span>
+                        <span class="receipt-value" id="receipt-nights">4</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="receipt-label">Room Rate:</span>
+                        <span class="receipt-value" id="receipt-rate">$250.00</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="receipt-label">Taxes:</span>
+                        <span class="receipt-value" id="receipt-taxes">$30.00</span>
+                    </div>
+                    <div class="receipt-row">
+                        <span class="receipt-label">Total:</span>
+                        <span class="receipt-value" id="receipt-total">$280.00</span>
+                    </div>
+                </div>
+                <div class="receipt-actions">
+                    <button id="print-receipt-btn" class="btn btn-primary">Print Receipt</button>
+                    <button id="close-receipt-btn" class="btn btn-secondary">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Modal -->
+    <div id="form-modal" class="modal">
+        <div class="modal-content form-modal">
+            <div class="modal-header">
+                <h3 class="modal-title">Guest Agreement Form</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div class="form-content">
+                <div class="form-group">
+                    <label>Booking ID</label>
+                    <select id="form-booking-id" class="form-control">
+                        <!-- Bookings will be loaded here -->
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Form Type</label>
+                    <select id="form-type" class="form-control">
+                        <option value="standard">Standard Guest Agreement</option>
+                        <option value="premium">Premium Service Agreement</option>
+                        <option value="group">Group Booking Agreement</option>
+                    </select>
+                </div>
+                <div class="form-field">
+                    <label>Form Content</label>
+                    <textarea id="form-content" rows="10">This Guest Agreement ("Agreement") is made between Luxury Suites ("Hotel") and the guest ("Guest") for the booking referenced above.
+
+1. CHECK-IN/CHECK-OUT:
+   - Check-in time is 3:00 PM
+   - Check-out time is 11:00 AM
+   - Early check-in/late check-out subject to availability and additional charges
+
+2. PAYMENT:
+   - Full payment is required at check-in
+   - Credit card required for incidentals
+   - No-show or late cancellation will result in charge of one night's stay
+
+3. CANCELLATION POLICY:
+   - Cancellations must be made 48 hours prior to arrival
+   - Late cancellations subject to one night's charge
+
+4. DAMAGES:
+   - Guest is responsible for any damages to hotel property
+   - Charges will be applied to the credit card on file
+
+5. GENERAL:
+   - No smoking in rooms (designated areas only)
+   - Quiet hours from 10:00 PM to 8:00 AM
+   - Pets not allowed (service animals exempt)
+
+By signing below, Guest acknowledges and agrees to all terms and conditions of this Agreement.</textarea>
+                </div>
+                <div class="form-actions">
+                    <button id="send-form-now-btn" class="btn btn-primary">Send Form</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Signature Modal -->
+    <div id="signature-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">Sign Form</h3>
+                <button class="close-modal">&times;</button>
+            </div>
+            <div id="form-to-sign">
+                <!-- Form content will be loaded here -->
+            </div>
+            <div class="form-group">
+                <label>Signature</label>
+                <div class="signature-pad">
+                    <canvas id="signature-pad" width="500" height="200" style="border:1px solid #ddd;"></canvas>
+                </div>
+                <button id="clear-signature" class="btn btn-secondary btn-sm clear-signature">Clear Signature</button>
+            </div>
+            <div class="form-actions">
+                <button id="submit-signed-form" class="btn btn-primary">Submit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/signature_pad/1.5.3/signature_pad.min.js"></script>
 
     <script>
-        // Configuration
-        const TOTAL_TASKS = 15;
-        const PLAYERS = ["Arya", "Shan", "Neev", "Naira", "Yug"];
-        let IMPOSTER = ""; // Will be set randomly
-        let sabotageDelay = localStorage.getItem('sabotageDelay') || 0;
-        
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyDGQE7m__ZrA3byU-3DHn8x7NpkLdOddic",
+            authDomain: "amongusauth.firebaseapp.com",
+            databaseURL: "https://amongusauth-default-rtdb.firebaseio.com",
+            projectId: "amongusauth",
+            storageBucket: "amongusauth.appspot.com",
+            messagingSenderId: "1024915360570",
+            appId: "1:1024915360570:web:be22081501d20a26631e03",
+            measurementId: "G-PKFC2W8GCN"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const database = firebase.database();
+
         // DOM Elements
-        const taskGrid = document.getElementById('taskGrid');
-        const progressFill = document.getElementById('progressFill');
-        const progressText = document.getElementById('progressText');
-        const resetBtn = document.getElementById('resetBtn');
-        const currentPlayer = document.getElementById('currentPlayer');
-        const roleDisplay = document.getElementById('roleDisplay');
-        const roleIcon = document.getElementById('roleIcon');
-        const showRoleBtn = document.getElementById('showRoleBtn');
-        const nextPlayerBtn = document.getElementById('nextPlayerBtn');
-        const sabotageBtn = document.getElementById('sabotageBtn');
-        const roleSelectorBtn = document.getElementById('roleSelectorBtn');
-        const sabotageModal = document.getElementById('sabotageModal');
-        const nairaRoomOption = document.getElementById('nairaRoomOption');
-        const diningTableOption = document.getElementById('diningTableOption');
-        const cancelSabotageBtn = document.getElementById('cancelSabotageBtn');
-        const timerContainer = document.getElementById('timerContainer');
-        const timerMessage = document.getElementById('timerMessage');
-        const closeTimerBtn = document.getElementById('closeTimerBtn');
-        const roundComplete = document.getElementById('roundComplete');
-        const youtubeIframe = document.getElementById('youtubeIframe');
-        const sabotageVideo = document.getElementById('sabotageVideo');
-        const sabotageVideoIframe = document.getElementById('sabotageVideoIframe');
-        const sabotageDelayInput = document.getElementById('sabotageDelay');
-        const nowBtn = document.getElementById('nowBtn');
-        
-        // YouTube Player API
-        let youtubePlayer;
-        let sabotageVideoPlayer;
-        
-        function onYouTubeIframeAPIReady() {
-            youtubePlayer = new YT.Player('youtubeIframe', {
-                events: {
-                    'onReady': onPlayerReady,
-                    'onStateChange': onPlayerStateChange
-                }
-            });
-            
-            sabotageVideoPlayer = new YT.Player('sabotageVideoIframe', {
-                events: {
-                    'onReady': onSabotagePlayerReady,
-                    'onStateChange': onSabotagePlayerStateChange
-                }
-            });
+        const authModal = document.getElementById('auth-modal');
+        const roomModal = document.getElementById('room-modal');
+        const receiptModal = document.getElementById('receipt-modal');
+        const formModal = document.getElementById('form-modal');
+        const signatureModal = document.getElementById('signature-modal');
+        const closeModalButtons = document.querySelectorAll('.close-modal');
+        const loginBtn = document.getElementById('login-btn');
+        const signupBtn = document.getElementById('signup-btn');
+        const logoutBtn = document.getElementById('logout-btn');
+        const bookNowBtn = document.getElementById('book-now-btn');
+        const welcomeMessage = document.getElementById('welcome-message');
+        const homeLink = document.getElementById('home-link');
+        const roomsLink = document.getElementById('rooms-link');
+        const bookingsLink = document.getElementById('bookings-link');
+        const adminLink = document.getElementById('admin-link');
+        const homeSection = document.getElementById('home-section');
+        const roomsSection = document.getElementById('rooms-section');
+        const bookingsSection = document.getElementById('bookings-section');
+        const adminSection = document.getElementById('admin-section');
+        const formsSection = document.getElementById('forms-section');
+        const roomsContainer = document.getElementById('rooms-container');
+        const bookingsContainer = document.getElementById('bookings-container');
+        const adminBookingsTable = document.getElementById('admin-bookings-table');
+        const formsContainer = document.getElementById('forms-container');
+        const sendFormBtn = document.getElementById('send-form-btn');
+        const modalLoginTab = document.getElementById('modal-login-tab');
+        const modalSignupTab = document.getElementById('modal-signup-tab');
+        const loginTabContent = document.getElementById('login-tab-content');
+        const signupTabContent = document.getElementById('signup-tab-content');
+        const loginForm = document.getElementById('login-form');
+        const signupForm = document.getElementById('signup-form');
+        const loginUsername = document.getElementById('login-username');
+        const loginPassword = document.getElementById('login-password');
+        const signupUsername = document.getElementById('signup-username');
+        const signupPassword = document.getElementById('signup-password');
+        const loginError = document.getElementById('login-error');
+        const signupError = document.getElementById('signup-error');
+        const roomModalTitle = document.getElementById('room-modal-title');
+        const roomModalImage = document.getElementById('room-modal-image');
+        const roomModalDescription = document.getElementById('room-modal-description');
+        const daysCount = document.getElementById('days-count');
+        const decreaseDaysBtn = document.getElementById('decrease-days');
+        const increaseDaysBtn = document.getElementById('increase-days');
+        const totalPrice = document.getElementById('total-price');
+        const guestInfoForm = document.getElementById('guest-info-form');
+        const saveInfoContainer = document.getElementById('save-info-container');
+        const useSavedInfoContainer = document.getElementById('use-saved-info-container');
+        const paymentOptions = document.getElementById('payment-options');
+        const creditCardForm = document.getElementById('credit-card-form');
+        const paypalForm = document.getElementById('paypal-form');
+        const backToRoomBtn = document.getElementById('back-to-room-btn');
+        const proceedToPaymentBtn = document.getElementById('proceed-to-payment-btn');
+        const confirmBookingBtn = document.getElementById('confirm-booking-btn');
+        const receiptId = document.getElementById('receipt-id');
+        const receiptName = document.getElementById('receipt-name');
+        const receiptRoom = document.getElementById('receipt-room');
+        const receiptCheckin = document.getElementById('receipt-checkin');
+        const receiptCheckout = document.getElementById('receipt-checkout');
+        const receiptNights = document.getElementById('receipt-nights');
+        const receiptRate = document.getElementById('receipt-rate');
+        const receiptTaxes = document.getElementById('receipt-taxes');
+        const receiptTotal = document.getElementById('receipt-total');
+        const printReceiptBtn = document.getElementById('print-receipt-btn');
+        const closeReceiptBtn = document.getElementById('close-receipt-btn');
+        const formBookingId = document.getElementById('form-booking-id');
+        const formType = document.getElementById('form-type');
+        const formContent = document.getElementById('form-content');
+        const sendFormNowBtn = document.getElementById('send-form-now-btn');
+        const formToSign = document.getElementById('form-to-sign');
+        const submitSignedForm = document.getElementById('submit-signed-form');
+        const clearSignature = document.getElementById('clear-signature');
+
+        // Global variables
+        let currentUser = null;
+        let currentRoom = null;
+        let currentBooking = null;
+        let currentForm = null;
+        let signaturePad = null;
+        let isAdmin = false;
+
+        // Initialize Signature Pad
+        function initSignaturePad() {
+            const canvas = document.getElementById('signature-pad');
+            signaturePad = new SignaturePad(canvas);
         }
 
-        function onPlayerReady(event) {
-            // Player is ready
+        // Show modal
+        function showModal(modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
         }
 
-        function onPlayerStateChange(event) {
-            // Player state changed
+        // Hide modal
+        function hideModal(modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto';
         }
-        
-        function onSabotagePlayerReady(event) {
-            // Sabotage player is ready
+
+        // Close modals when clicking X button
+        closeModalButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const modal = button.closest('.modal');
+                hideModal(modal);
+            });
+        });
+
+        // Close modals when clicking outside
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal')) {
+                hideModal(e.target);
+            }
+        });
+
+        // Tab switching in auth modal
+        modalLoginTab.addEventListener('click', () => {
+            modalLoginTab.classList.add('active');
+            modalSignupTab.classList.remove('active');
+            loginTabContent.classList.add('active');
+            signupTabContent.classList.remove('active');
+            loginError.textContent = '';
+        });
+
+        modalSignupTab.addEventListener('click', () => {
+            modalSignupTab.classList.add('active');
+            modalLoginTab.classList.remove('active');
+            signupTabContent.classList.add('active');
+            loginTabContent.classList.remove('active');
+            signupError.textContent = '';
+        });
+
+        // Show auth modal
+        loginBtn.addEventListener('click', () => showModal(authModal));
+        signupBtn.addEventListener('click', () => {
+            showModal(authModal);
+            modalSignupTab.click();
+        });
+
+        // Navigation
+        homeLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('home');
+        });
+
+        roomsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('rooms');
+            loadRooms();
+        });
+
+        bookingsLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('bookings');
+            loadBookings();
+        });
+
+        adminLink.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('admin');
+            loadAdminBookings();
+        });
+
+        bookNowBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('rooms');
+            loadRooms();
+        });
+
+        // Show section
+        function showSection(section) {
+            homeSection.style.display = 'none';
+            roomsSection.style.display = 'none';
+            bookingsSection.style.display = 'none';
+            adminSection.style.display = 'none';
+            formsSection.style.display = 'none';
+
+            if (section === 'home') homeSection.style.display = 'block';
+            if (section === 'rooms') roomsSection.style.display = 'block';
+            if (section === 'bookings') bookingsSection.style.display = 'block';
+            if (section === 'admin') adminSection.style.display = 'block';
+            if (section === 'forms') formsSection.style.display = 'block';
         }
-        
-        function onSabotagePlayerStateChange(event) {
-            if (event.data === YT.PlayerState.ENDED) {
-                // When sabotage video ends, hide it and show the timer
-                sabotageVideo.classList.remove('active');
-                timerContainer.classList.add('active');
-                
-                // Play the countdown audio
-                if (youtubePlayer) {
-                    youtubePlayer.seekTo(0);
-                    youtubePlayer.playVideo();
-                }
+
+        // Load rooms
+        function loadRooms() {
+            roomsContainer.innerHTML = '<p>Loading rooms...</p>';
+            database.ref('rooms').once('value')
+                .then(snapshot => {
+                    const rooms = snapshot.val();
+                    roomsContainer.innerHTML = '';
+                    if (rooms) {
+                        Object.keys(rooms).forEach(key => {
+                            const room = rooms[key];
+                            const roomCard = document.createElement('div');
+                            roomCard.className = 'room-card';
+                            roomCard.innerHTML = `
+                                <div class="room-image" style="background-image: url('${room.image || 'https://via.placeholder.com/300x200'}')"></div>
+                                <div class="room-info">
+                                    <h3 class="room-title">${room.name || 'Room'}</h3>
+                                    <div class="room-price">$${room.price || '0'}/night</div>
+                                    <div class="room-features">
+                                        <h4>Features:</h4>
+                                        <ul>
+                                            ${(room.features || []).map(feature => `<li>${feature}</li>`).join('')}
+                                        </ul>
+                                    </div>
+                                    <button class="view-room-btn" data-id="${key}">View Room</button>
+                                </div>
+                            `;
+                            roomsContainer.appendChild(roomCard);
+                        });
+                        document.querySelectorAll('.view-room-btn').forEach(button => {
+                            button.addEventListener('click', () => {
+                                const roomId = button.getAttribute('data-id');
+                                viewRoom(roomId);
+                            });
+                        });
+                    } else {
+                        roomsContainer.innerHTML = '<p>No rooms available.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading rooms:', error);
+                    roomsContainer.innerHTML = '<p>Error loading rooms. Please try again.</p>';
+                });
+        }
+
+        // View room details
+        function viewRoom(roomId) {
+            database.ref(`rooms/${roomId}`).once('value')
+                .then(snapshot => {
+                    const room = snapshot.val();
+                    if (room) {
+                        currentRoom = { id: roomId, ...room };
+                        roomModalTitle.textContent = room.name || 'Room Details';
+                        roomModalImage.style.backgroundImage = `url('${room.image || 'https://via.placeholder.com/300x200'}')`;
+                        
+                        roomModalDescription.innerHTML = `
+                            <div class="room-price">$${room.price || '0'}/night</div>
+                            <p>${room.description || 'No description available.'}</p>
+                            <div class="room-features">
+                                <h4>Room Features:</h4>
+                                <ul>
+                                    ${(room.features || []).map(feature => `<li>${feature}</li>`).join('')}
+                                </ul>
+                            </div>
+                            <div class="room-amenities">
+                                <h4>Amenities:</h4>
+                                <ul>
+                                    ${(room.amenities || []).map(amenity => `<li>${amenity}</li>`).join('')}
+                                </ul>
+                            </div>
+                        `;
+
+                        // Reset booking form
+                        daysCount.value = 1;
+                        updateTotalPrice();
+                        guestInfoForm.style.display = 'none';
+                        paymentOptions.style.display = 'none';
+                        backToRoomBtn.style.display = 'none';
+                        proceedToPaymentBtn.style.display = 'block';
+                        confirmBookingBtn.style.display = 'none';
+
+                        showModal(roomModal);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading room:', error);
+                    alert('Error loading room details. Please try again.');
+                });
+        }
+
+        // Update total price when days change
+        function updateTotalPrice() {
+            if (currentRoom) {
+                const days = parseInt(daysCount.value) || 1;
+                const price = (currentRoom.price || 0) * days;
+                const tax = price * 0.1; // 10% tax
+                const total = price + tax;
+                totalPrice.textContent = total.toFixed(2);
             }
         }
 
-        // Load YouTube API
-        const tag = document.createElement('script');
-        tag.src = "https://www.youtube.com/iframe_api";
-        const firstScriptTag = document.getElementsByTagName('script')[0];
-        firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+        // Days selector buttons
+        decreaseDaysBtn.addEventListener('click', () => {
+            const current = parseInt(daysCount.value) || 1;
+            if (current > 1) {
+                daysCount.value = current - 1;
+                updateTotalPrice();
+            }
+        });
 
-        // State
-        let completedTasks = 0;
-        let currentPlayerIndex = 0;
-        let isRoleRevealed = false;
-        let sabotageActive = false;
-        let allPlayersRevealed = false;
-        
-        // Initialize
+        increaseDaysBtn.addEventListener('click', () => {
+            const current = parseInt(daysCount.value) || 1;
+            daysCount.value = current + 1;
+            updateTotalPrice();
+        });
+
+        daysCount.addEventListener('change', () => {
+            if (daysCount.value < 1) daysCount.value = 1;
+            updateTotalPrice();
+        });
+
+        // Proceed to payment
+        proceedToPaymentBtn.addEventListener('click', () => {
+            if (!currentUser) {
+                showModal(authModal);
+                return;
+            }
+
+            // Check if user has saved info
+            database.ref(`users/${currentUser.uid}/savedInfo`).once('value')
+                .then(snapshot => {
+                    const savedInfo = snapshot.val();
+                    if (savedInfo) {
+                        useSavedInfoContainer.style.display = 'block';
+                        document.getElementById('use-saved-info').checked = true;
+                    } else {
+                        saveInfoContainer.style.display = 'block';
+                    }
+
+                    guestInfoForm.style.display = 'block';
+                    proceedToPaymentBtn.style.display = 'none';
+                    backToRoomBtn.style.display = 'inline-block';
+                    confirmBookingBtn.style.display = 'inline-block';
+                });
+        });
+
+        // Back to room details
+        backToRoomBtn.addEventListener('click', () => {
+            guestInfoForm.style.display = 'none';
+            paymentOptions.style.display = 'none';
+            backToRoomBtn.style.display = 'none';
+            confirmBookingBtn.style.display = 'none';
+            proceedToPaymentBtn.style.display = 'block';
+        });
+
+        // Confirm booking
+        confirmBookingBtn.addEventListener('click', () => {
+            const useSavedInfo = document.getElementById('use-saved-info')?.checked || false;
+            const saveInfo = document.getElementById('save-info')?.checked || false;
+            const days = parseInt(daysCount.value) || 1;
+            const price = (currentRoom?.price || 0) * days;
+            const tax = price * 0.1;
+            const total = price + tax;
+
+            let guestInfo = {};
+            if (useSavedInfo) {
+                // Get saved info from database
+                database.ref(`users/${currentUser.uid}/savedInfo`).once('value')
+                    .then(snapshot => {
+                        guestInfo = snapshot.val();
+                        completeBooking(guestInfo, saveInfo, days, total);
+                    });
+            } else {
+                // Use form info
+                guestInfo = {
+                    name: document.getElementById('guest-name').value,
+                    email: document.getElementById('guest-email').value,
+                    phone: document.getElementById('guest-phone').value
+                };
+
+                if (!guestInfo.name || !guestInfo.email || !guestInfo.phone) {
+                    alert('Please fill in all guest information');
+                    return;
+                }
+
+                completeBooking(guestInfo, saveInfo, days, total);
+            }
+        });
+
+        // Complete booking process
+        function completeBooking(guestInfo, saveInfo, days, total) {
+            // Generate booking ID
+            const bookingId = 'B' + Math.random().toString(36).substr(2, 8).toUpperCase();
+            const now = new Date();
+            const checkIn = new Date();
+            checkIn.setDate(now.getDate() + 1); // Tomorrow
+            const checkOut = new Date(checkIn);
+            checkOut.setDate(checkIn.getDate() + days);
+
+            // Format dates
+            const formatDate = (date) => {
+                return date.toLocaleDateString('en-US', { 
+                    year: 'numeric', 
+                    month: 'short', 
+                    day: 'numeric' 
+                });
+            };
+
+            // Create booking object
+            const booking = {
+                id: bookingId,
+                roomId: currentRoom.id,
+                roomName: currentRoom.name,
+                roomPrice: currentRoom.price,
+                userId: currentUser.uid,
+                userName: currentUser.displayName || guestInfo.name,
+                userEmail: guestInfo.email,
+                userPhone: guestInfo.phone,
+                checkIn: checkIn.toISOString(),
+                checkOut: checkOut.toISOString(),
+                days: days,
+                total: total,
+                status: 'confirmed',
+                createdAt: now.toISOString()
+            };
+
+            // Save booking to database
+            database.ref(`bookings/${bookingId}`).set(booking)
+                .then(() => {
+                    // Save to user's bookings
+                    database.ref(`users/${currentUser.uid}/bookings/${bookingId}`).set(true);
+
+                    // Save guest info if requested
+                    if (saveInfo) {
+                        database.ref(`users/${currentUser.uid}/savedInfo`).set({
+                            name: guestInfo.name,
+                            email: guestInfo.email,
+                            phone: guestInfo.phone
+                        });
+                    }
+
+                    // Show receipt
+                    showReceipt(booking);
+                    hideModal(roomModal);
+                })
+                .catch(error => {
+                    console.error('Error saving booking:', error);
+                    alert('Error completing booking. Please try again.');
+                });
+        }
+
+        // Show booking receipt
+        function showReceipt(booking) {
+            const checkInDate = new Date(booking.checkIn);
+            const checkOutDate = new Date(booking.checkOut);
+            
+            receiptId.textContent = booking.id;
+            receiptName.textContent = booking.userName;
+            receiptRoom.textContent = booking.roomName;
+            receiptCheckin.textContent = checkInDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            receiptCheckout.textContent = checkOutDate.toLocaleDateString('en-US', { 
+                year: 'numeric', 
+                month: 'short', 
+                day: 'numeric' 
+            });
+            receiptNights.textContent = booking.days;
+            receiptRate.textContent = `$${booking.roomPrice.toFixed(2)}`;
+            receiptTaxes.textContent = `$${(booking.total - (booking.roomPrice * booking.days)).toFixed(2)}`;
+            receiptTotal.textContent = `$${booking.total.toFixed(2)}`;
+
+            showModal(receiptModal);
+        }
+
+        // Print receipt
+        printReceiptBtn.addEventListener('click', () => {
+            window.print();
+        });
+
+        // Close receipt
+        closeReceiptBtn.addEventListener('click', () => {
+            hideModal(receiptModal);
+            showSection('bookings');
+            loadBookings();
+        });
+
+        // Load user bookings
+        function loadBookings() {
+            if (!currentUser) return;
+            bookingsContainer.innerHTML = '<p>Loading your bookings...</p>';
+            database.ref(`users/${currentUser.uid}/bookings`).once('value')
+                .then(snapshot => {
+                    const bookingIds = snapshot.val();
+                    if (bookingIds) {
+                        const promises = Object.keys(bookingIds).map(bookingId => {
+                            return database.ref(`bookings/${bookingId}`).once('value');
+                        });
+                        Promise.all(promises)
+                            .then(snapshots => {
+                                const bookings = snapshots.map(snap => snap.val());
+                                displayBookings(bookings);
+                            });
+                    } else {
+                        bookingsContainer.innerHTML = '<p>You have no bookings yet.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading bookings:', error);
+                    bookingsContainer.innerHTML = '<p>Error loading bookings. Please try again.</p>';
+                });
+        }
+
+        // Display bookings
+        function displayBookings(bookings) {
+            bookingsContainer.innerHTML = '';
+            if (!bookings || bookings.length === 0) {
+                bookingsContainer.innerHTML = '<p>You have no bookings yet.</p>';
+                return;
+            }
+            bookings.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            bookings.forEach(booking => {
+                const checkIn = new Date(booking.checkIn);
+                const checkOut = new Date(booking.checkOut);
+                const bookingCard = document.createElement('div');
+                bookingCard.className = 'room-card';
+                bookingCard.innerHTML = `
+                    <div class="room-info">
+                        <h3 class="room-title">${booking.roomName}</h3>
+                        <div class="room-price">Booking #${booking.id}</div>
+                        <div class="room-features">
+                            <div class="room-feature">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>${checkIn.toLocaleDateString()} - ${checkOut.toLocaleDateString()}</span>
+                            </div>
+                            <div class="room-feature">
+                                <i class="fas fa-moon"></i>
+                                <span>${booking.days} nights</span>
+                            </div>
+                            <div class="room-feature">
+                                <i class="fas fa-dollar-sign"></i>
+                                <span>Total: $${booking.total.toFixed(2)}</span>
+                            </div>
+                            <div class="room-feature">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Status: ${booking.status}</span>
+                            </div>
+                        </div>
+                        <button class="view-room-btn" data-id="${booking.id}">View Details</button>
+                    </div>
+                `;
+                bookingsContainer.appendChild(bookingCard);
+            });
+        }
+
+        // Load admin bookings
+        function loadAdminBookings() {
+            adminBookingsTable.innerHTML = '<tr><td colspan="7">Loading bookings...</td></tr>';
+
+            database.ref('bookings').once('value')
+                .then(snapshot => {
+                    const bookings = snapshot.val();
+                    if (bookings) {
+                        adminBookingsTable.innerHTML = '';
+                        Object.keys(bookings).forEach(bookingId => {
+                            const booking = bookings[bookingId];
+                            const checkIn = new Date(booking.checkIn);
+                            const checkOut = new Date(booking.checkOut);
+                            
+                            const row = document.createElement('tr');
+                            row.innerHTML = `
+                                <td>${booking.id}</td>
+                                <td>${booking.userName}</td>
+                                <td>${booking.roomName}</td>
+                                <td>${checkIn.toLocaleDateString()} - ${checkOut.toLocaleDateString()}</td>
+                                <td>$${booking.total.toFixed(2)}</td>
+                                <td><span class="status-badge status-${booking.status}">${booking.status}</span></td>
+                                <td>
+                                    <button class="action-btn btn-primary btn-sm" data-id="${booking.id}">View</button>
+                                    <button class="action-btn btn-secondary btn-sm send-form-btn" data-id="${booking.id}">Send Form</button>
+                                </td>
+                            `;
+                            adminBookingsTable.appendChild(row);
+                        });
+
+                        // Add event listeners to view buttons
+                        document.querySelectorAll('.action-btn').forEach(button => {
+                            if (!button.classList.contains('send-form-btn')) {
+                                button.addEventListener('click', () => {
+                                    const bookingId = button.getAttribute('data-id');
+                                    viewBooking(bookingId);
+                                });
+                            }
+                        });
+
+                        // Add event listeners to send form buttons
+                        document.querySelectorAll('.send-form-btn').forEach(button => {
+                            button.addEventListener('click', () => {
+                                const bookingId = button.getAttribute('data-id');
+                                prepareSendForm(bookingId);
+                            });
+                        });
+                    } else {
+                        adminBookingsTable.innerHTML = '<tr><td colspan="7">No bookings found.</td></tr>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading admin bookings:', error);
+                    adminBookingsTable.innerHTML = '<tr><td colspan="7">Error loading bookings. Please try again.</td></tr>';
+                });
+        }
+
+        // View booking details
+        function viewBooking(bookingId) {
+            database.ref(`bookings/${bookingId}`).once('value')
+                .then(snapshot => {
+                    const booking = snapshot.val();
+                    if (booking) {
+                        currentBooking = booking;
+                        const checkIn = new Date(booking.checkIn);
+                        const checkOut = new Date(booking.checkOut);
+                        
+                        // Show booking in receipt modal
+                        receiptId.textContent = booking.id;
+                        receiptName.textContent = booking.userName;
+                        receiptRoom.textContent = booking.roomName;
+                        receiptCheckin.textContent = checkIn.toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric' 
+                        });
+                        receiptCheckout.textContent = checkOut.toLocaleDateString('en-US', { 
+                            year: 'numeric', 
+                            month: 'short', 
+                            day: 'numeric' 
+                        });
+                        receiptNights.textContent = booking.days;
+                        receiptRate.textContent = `$${booking.roomPrice.toFixed(2)}`;
+                        receiptTaxes.textContent = `$${(booking.total - (booking.roomPrice * booking.days)).toFixed(2)}`;
+                        receiptTotal.textContent = `$${booking.total.toFixed(2)}`;
+
+                        // Hide print button for admin view
+                        printReceiptBtn.style.display = 'none';
+                        showModal(receiptModal);
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading booking:', error);
+                    alert('Error loading booking details. Please try again.');
+                });
+        }
+
+        // Prepare to send form
+        function prepareSendForm(bookingId) {
+            currentBooking = { id: bookingId };
+            
+            // Load booking to get guest name
+            database.ref(`bookings/${bookingId}`).once('value')
+                .then(snapshot => {
+                    const booking = snapshot.val();
+                    if (booking) {
+                        currentBooking = booking;
+                        
+                        // Set form title
+                        document.querySelector('#form-modal .modal-title').textContent = 
+                            `Send Form to ${booking.userName}`;
+                        
+                        // Show form modal
+                        showModal(formModal);
+                    }
+                });
+        }
+
+        // Send form to guest
+        sendFormNowBtn.addEventListener('click', () => {
+            const formTypeValue = formType.value;
+            const formContentValue = formContent.value;
+            
+            if (!formContentValue) {
+                alert('Please enter form content');
+                return;
+            }
+
+            // Create form object
+            const formId = 'F' + Math.random().toString(36).substr(2, 8).toUpperCase();
+            const form = {
+                id: formId,
+                bookingId: currentBooking.id,
+                userId: currentBooking.userId,
+                userName: currentBooking.userName,
+                type: formTypeValue,
+                content: formContentValue,
+                status: 'pending',
+                createdAt: new Date().toISOString()
+            };
+
+            // Save form to database
+            database.ref(`forms/${formId}`).set(form)
+                .then(() => {
+                    // Save to user's forms
+                    database.ref(`users/${currentBooking.userId}/forms/${formId}`).set(true);
+                    
+                    alert('Form sent successfully!');
+                    hideModal(formModal);
+                })
+                .catch(error => {
+                    console.error('Error sending form:', error);
+                    alert('Error sending form. Please try again.');
+                });
+        });
+
+        // Load guest forms
+        function loadForms() {
+            if (!currentUser) return;
+
+            formsContainer.innerHTML = '<p>Loading your forms...</p>';
+
+            database.ref(`users/${currentUser.uid}/forms`).once('value')
+                .then(snapshot => {
+                    const formIds = snapshot.val();
+                    if (formIds) {
+                        const promises = Object.keys(formIds).map(formId => {
+                            return database.ref(`forms/${formId}`).once('value');
+                        });
+
+                        Promise.all(promises)
+                            .then(snapshots => {
+                                const forms = snapshots.map(snap => snap.val());
+                                displayForms(forms);
+                            });
+                    } else {
+                        formsContainer.innerHTML = '<p>You have no pending forms.</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading forms:', error);
+                    formsContainer.innerHTML = '<p>Error loading forms. Please try again.</p>';
+                });
+        }
+
+        // Display forms
+        function displayForms(forms) {
+            formsContainer.innerHTML = '';
+            
+            if (forms.length === 0) {
+                formsContainer.innerHTML = '<p>You have no pending forms.</p>';
+                return;
+            }
+
+            forms.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+            forms.forEach(form => {
+                const formCard = document.createElement('div');
+                formCard.className = 'form-card';
+                formCard.innerHTML = `
+                    <div class="form-card-header">
+                        <h3 class="form-card-title">${form.type === 'standard' ? 'Guest Agreement' : 
+                          form.type === 'premium' ? 'Premium Service Agreement' : 'Group Booking Agreement'}</h3>
+                        <div class="form-card-date">${new Date(form.createdAt).toLocaleDateString()}</div>
+                    </div>
+                    <div class="form-card-body">
+                        <p>${form.content.split('\n')[0]}...</p>
+                        <p><strong>Status:</strong> ${form.status}</p>
+                    </div>
+                    <button class="btn btn-primary" data-id="${form.id}">${form.status === 'pending' ? 'Sign Now' : 'View'}</button>
+                `;
+                formsContainer.appendChild(formCard);
+
+                // Add event listener to form button
+                formCard.querySelector('button').addEventListener('click', () => {
+                    viewForm(form.id);
+                });
+            });
+        }
+
+        // View form
+        function viewForm(formId) {
+            database.ref(`forms/${formId}`).once('value')
+                .then(snapshot => {
+                    const form = snapshot.val();
+                    if (form) {
+                        currentForm = form;
+                        
+                        if (form.status === 'pending') {
+                            // Show form for signing
+                            formToSign.innerHTML = `
+                                <h3>${form.type === 'standard' ? 'Guest Agreement' : 
+                                  form.type === 'premium' ? 'Premium Service Agreement' : 'Group Booking Agreement'}</h3>
+                                <p>Booking #${form.bookingId}</p>
+                                <div style="white-space: pre-line; margin: 1rem 0; padding: 1rem; background: #f9f9f9; border-radius: 4px;">
+                                    ${form.content}
+                                </div>
+                            `;
+                            showModal(signatureModal);
+                        } else {
+                            // Show completed form
+                            formToSign.innerHTML = `
+                                <h3>${form.type === 'standard' ? 'Guest Agreement' : 
+                                  form.type === 'premium' ? 'Premium Service Agreement' : 'Group Booking Agreement'}</h3>
+                                <p>Booking #${form.bookingId}</p>
+                                <div style="white-space: pre-line; margin: 1rem 0; padding: 1rem; background: #f9f9f9; border-radius: 4px;">
+                                    ${form.content}
+                                </div>
+                                <div style="margin-top: 1rem;">
+                                    <p><strong>Status:</strong> Signed on ${new Date(form.signedAt).toLocaleDateString()}</p>
+                                    <img src="${form.signature}" style="max-width: 100%; border: 1px solid #ddd; margin-top: 1rem;">
+                                </div>
+                            `;
+                            submitSignedForm.style.display = 'none';
+                            showModal(signatureModal);
+                        }
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading form:', error);
+                    alert('Error loading form. Please try again.');
+                });
+        }
+
+        // Submit signed form
+        submitSignedForm.addEventListener('click', () => {
+            if (!signaturePad || signaturePad.isEmpty()) {
+                alert('Please provide your signature');
+                return;
+            }
+
+            // Get signature as image
+            const signature = signaturePad.toDataURL();
+            
+            // Update form in database
+            database.ref(`forms/${currentForm.id}`).update({
+                status: 'completed',
+                signedAt: new Date().toISOString(),
+                signature: signature
+            })
+            .then(() => {
+                alert('Form submitted successfully!');
+                hideModal(signatureModal);
+                loadForms();
+            })
+            .catch(error => {
+                console.error('Error submitting form:', error);
+                alert('Error submitting form. Please try again.');
+            });
+        });
+
+        // Clear signature
+        clearSignature.addEventListener('click', () => {
+            if (signaturePad) {
+                signaturePad.clear();
+            }
+        });
+
+        // Login form submission
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = loginUsername.value.trim();
+            const password = loginPassword.value.trim();
+
+            if (!username || !password) {
+                loginError.textContent = 'Please enter username and password';
+                return;
+            }
+
+            // Generate email from username
+            const email = generateEmail(username);
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Success
+                    loginError.textContent = '';
+                    hideModal(authModal);
+                    checkAdminStatus(userCredential.user);
+                })
+                .catch((error) => {
+                    loginError.textContent = 'Invalid username or password';
+                    console.error('Login error:', error);
+                });
+        });
+
+        // Signup form submission
+        signupForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = signupUsername.value.trim();
+            const password = signupPassword.value.trim();
+
+            if (!username || !password) {
+                signupError.textContent = 'Please enter username and password';
+                return;
+            }
+
+            if (password.length < 6) {
+                signupError.textContent = 'Password must be at least 6 characters';
+                return;
+            }
+
+            // Generate email from username
+            const email = generateEmail(username);
+
+            auth.createUserWithEmailAndPassword(email, password)
+                .then((userCredential) => {
+                    // Set display name
+                    return userCredential.user.updateProfile({
+                        displayName: username
+                    });
+                })
+                .then(() => {
+                    // Success
+                    signupError.textContent = '';
+                    hideModal(authModal);
+                    checkAdminStatus(auth.currentUser);
+                })
+                .catch((error) => {
+                    signupError.textContent = error.message;
+                    console.error('Signup error:', error);
+                });
+        });
+
+        // Generate email from username
+        function generateEmail(username) {
+            return `${username.toLowerCase().replace(/\s+/g, '')}@luxurysuites.com`;
+        }
+
+        // Check if user is admin (Naira)
+        function checkAdminStatus(user) {
+            if (!user) return;
+
+            currentUser = user;
+            const username = user.displayName || user.email.split('@')[0];
+
+            // Check if user is Naira (case insensitive)
+            isAdmin = username.toLowerCase() === 'naira';
+
+            // Update UI
+            welcomeMessage.textContent = isAdmin ? 'Welcome Hotel Owner' : `Welcome, ${username}`;
+            loginBtn.style.display = 'none';
+            signupBtn.style.display = 'none';
+            logoutBtn.style.display = 'inline-block';
+            bookingsLink.style.display = 'inline-block';
+            
+            if (isAdmin) {
+                adminLink.style.display = 'inline-block';
+                showSection('admin');
+                loadAdminBookings();
+            } else {
+                adminLink.style.display = 'none';
+                showSection('home');
+            }
+
+            // Initialize sample data if needed
+            if (isAdmin) {
+                initializeSampleData();
+            }
+        }
+
+        // Initialize sample data
+        function initializeSampleData() {
+            database.ref('rooms').once('value')
+                .then(snapshot => {
+                    if (!snapshot.exists()) {
+                        const rooms = {
+                            'room1': {
+                                name: 'Deluxe Suite',
+                                description: 'Our most luxurious accommodation with separate living area and premium amenities',
+                                price: 299,
+                                image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+                                features: [
+                                    'King-size bed',
+                                    'Separate living area',
+                                    'Premium linens',
+                                    '55" Smart TV'
+                                ],
+                                amenities: [
+                                    'Free WiFi',
+                                    'Daily housekeeping',
+                                    '24/7 room service',
+                                    'Access to fitness center'
+                                ]
+                            },
+                            'room2': {
+                                name: 'Executive Room',
+                                description: 'Spacious room with panoramic city views and executive lounge access',
+                                price: 199,
+                                image: 'https://images.unsplash.com/photo-1566669437685-b9e0ca5d4272?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+                                features: [
+                                    'Queen-size bed',
+                                    'City view',
+                                    'Work desk',
+                                    '40" Smart TV'
+                                ],
+                                amenities: [
+                                    'Free WiFi',
+                                    'Daily housekeeping',
+                                    'Complimentary breakfast',
+                                    'Access to business center'
+                                ]
+                            },
+                            'room3': {
+                                name: 'Classic Room',
+                                description: 'Comfortable room with all essential amenities for a pleasant stay',
+                                price: 149,
+                                image: 'https://images.unsplash.com/photo-1592229505726-ca121043b6ec?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80',
+                                features: [
+                                    'Queen-size bed',
+                                    'Standard amenities',
+                                    '32" Smart TV',
+                                    'Coffee maker'
+                                ],
+                                amenities: [
+                                    'Free WiFi',
+                                    'Daily housekeeping',
+                                    'Access to pool'
+                                ]
+                            }
+                        };
+
+                        database.ref('rooms').set(rooms);
+                    }
+                });
+        }
+
+        // Logout
+        logoutBtn.addEventListener('click', () => {
+            auth.signOut()
+                .then(() => {
+                    currentUser = null;
+                    isAdmin = false;
+                    welcomeMessage.textContent = '';
+                    loginBtn.style.display = 'inline-block';
+                    signupBtn.style.display = 'inline-block';
+                    logoutBtn.style.display = 'none';
+                    bookingsLink.style.display = 'none';
+                    adminLink.style.display = 'none';
+                    showSection('home');
+                })
+                .catch(error => {
+                    console.error('Logout error:', error);
+                });
+        });
+
+        // Auth state listener
+        auth.onAuthStateChanged((user) => {
+            if (user) {
+                checkAdminStatus(user);
+            } else {
+                currentUser = null;
+                isAdmin = false;
+                welcomeMessage.textContent = '';
+                loginBtn.style.display = 'inline-block';
+                signupBtn.style.display = 'inline-block';
+                logoutBtn.style.display = 'none';
+                bookingsLink.style.display = 'none';
+                adminLink.style.display = 'none';
+                showSection('home');
+            }
+        });
+
+        // Initialize the app
         function init() {
-            // Set random imposter
-            selectRandomImposter();
+            initSignaturePad();
+            showSection('home');
             
-            // Set saved sabotage delay
-            sabotageDelayInput.value = sabotageDelay;
-            
-            createTasks();
-            updatePlayerDisplay();
-            updateProgress();
-        }
-        
-        // Select random imposter
-        function selectRandomImposter() {
-            IMPOSTER = PLAYERS[Math.floor(Math.random() * PLAYERS.length)];
-        }
-        
-        // Create task grid
-        function createTasks() {
-            taskGrid.innerHTML = '';
-            
-            for (let i = 0; i < TOTAL_TASKS; i++) {
-                const task = document.createElement('div');
-                task.className = 'task glass-card';
-                task.textContent = `Task ${i + 1}`;
-                task.addEventListener('click', () => toggleTask(task));
-                taskGrid.appendChild(task);
+            // Check if user is already logged in
+            if (auth.currentUser) {
+                checkAdminStatus(auth.currentUser);
             }
         }
-        
-        // Toggle task completion
-        function toggleTask(taskElement) {
-            const wasCompleted = taskElement.classList.contains('completed');
-            
-            if (wasCompleted) {
-                taskElement.classList.remove('completed');
-                completedTasks--;
-            } else {
-                taskElement.classList.add('completed');
-                completedTasks++;
-            }
-            
-            updateProgress();
-        }
-        
-        // Update progress display
-        function updateProgress() {
-            const progress = (completedTasks / TOTAL_TASKS) * 100;
-            progressFill.style.width = `${progress}%`;
-            progressText.textContent = `${completedTasks}/${TOTAL_TASKS}`;
-        }
-        
-        // Update player display
-        function updatePlayerDisplay() {
-            isRoleRevealed = false;
-            
-            currentPlayer.textContent = PLAYERS[currentPlayerIndex];
-            roleDisplay.className = 'role';
-            roleDisplay.textContent = '';
-            roleIcon.className = 'role-icon';
-            roleIcon.style.backgroundImage = '';
-            
-            showRoleBtn.disabled = false;
-            showRoleBtn.textContent = 'Reveal Role';
-        }
-        
-        // Reveal role for current player
-        function revealRole() {
-            if (isRoleRevealed) return;
-            
-            const player = PLAYERS[currentPlayerIndex];
-            const isImposter = player === IMPOSTER;
-            
-            // Set role display
-            roleDisplay.textContent = isImposter ? 'IMPOSTER' : 'CREWMATE';
-            roleDisplay.className = `role ${isImposter ? 'imposter' : 'crewmate'}`;
-            
-            // Set role icon
-            roleIcon.className = `role-icon ${isImposter ? 'imposter' : 'crewmate'}`;
-            roleIcon.style.backgroundImage = isImposter 
-                ? 'url("https://cdn-icons-png.flaticon.com/512/2583/2583344.png")' 
-                : 'url("https://cdn-icons-png.flaticon.com/512/2583/2583329.png")';
-            
-            // Disable button during reveal
-            showRoleBtn.disabled = true;
-            showRoleBtn.textContent = isImposter ? 'IMPOSTER!' : 'Crewmate';
-            
-            // Animate elements
-            setTimeout(() => {
-                roleDisplay.classList.add('show');
-                roleIcon.classList.add('show');
-            }, 50);
-            
-            isRoleRevealed = true;
-        }
-        
-        // Move to next player
-        function nextPlayer() {
-            if (!isRoleRevealed) {
-                revealRole();
-                setTimeout(() => {
-                    advancePlayer();
-                }, 1500);
-            } else {
-                advancePlayer();
-            }
-        }
-        
-        function advancePlayer() {
-            currentPlayerIndex = (currentPlayerIndex + 1) % PLAYERS.length;
-            
-            // Check if all players have been revealed
-            if (currentPlayerIndex === 0) {
-                allPlayersRevealed = true;
-                showRoundComplete();
-            } else {
-                updatePlayerDisplay();
-            }
-        }
-        
-        // Show round complete message
-        function showRoundComplete() {
-            roundComplete.classList.add('active');
-            
-            setTimeout(() => {
-                roundComplete.classList.remove('active');
-                startNewRound();
-            }, 3000);
-        }
-        
-        // Start a new round
-        function startNewRound() {
-            // Reset player index
-            currentPlayerIndex = 0;
-            
-            // Select new random imposter
-            selectRandomImposter();
-            
-            // Reset tasks
-            document.querySelectorAll('.task').forEach(task => {
-                task.classList.remove('completed');
-            });
-            completedTasks = 0;
-            updateProgress();
-            
-            // Update player display
-            allPlayersRevealed = false;
-            updatePlayerDisplay();
-        }
-        
-        // Activate sabotage
-        function activateSabotage(type) {
-            if (sabotageActive) return;
-            
-            sabotageActive = true;
-            sabotageBtn.disabled = true;
-            
-            // Set message based on sabotage type
-            const message = type === 'naira' 
-                ? "Naira's Room - 2 people must have hands on paper" 
-                : "Dining Table - 2 people must sit down";
-            
-            timerMessage.textContent = message;
-            
-            // Set the appropriate video based on sabotage type
-            const videoId = type === 'naira' 
-                ? 'ZrXA0JoOuwE' 
-                : '-puHyEdltnM';
-            
-            // Load and play the sabotage video
-            if (sabotageVideoPlayer) {
-                sabotageVideoPlayer.loadVideoById(videoId);
-                sabotageVideo.classList.add('active');
-            }
-        }
-        
-        // Schedule sabotage with delay
-        function scheduleSabotage(type) {
-            const delay = parseInt(sabotageDelayInput.value) * 1000;
-            
-            // Save delay setting
-            sabotageDelay = sabotageDelayInput.value;
-            localStorage.setItem('sabotageDelay', sabotageDelay);
-            
-            if (delay === 0) {
-                activateSabotage(type);
-            } else {
-                setTimeout(() => {
-                    activateSabotage(type);
-                }, delay);
-            }
-            
-            sabotageModal.classList.remove('active');
-        }
-        
-        // Event Listeners
-        resetBtn.addEventListener('click', () => {
-            // Reset tasks
-            document.querySelectorAll('.task').forEach(task => {
-                task.classList.remove('completed');
-            });
-            completedTasks = 0;
-            updateProgress();
-            
-            // Reset player display and choose new imposter
-            currentPlayerIndex = 0;
-            selectRandomImposter();
-            updatePlayerDisplay();
-            
-            // Reset sabotage
-            sabotageActive = false;
-            sabotageBtn.disabled = false;
-            timerContainer.classList.remove('active');
-            sabotageVideo.classList.remove('active');
-            
-            // Reset round state
-            allPlayersRevealed = false;
-            roundComplete.classList.remove('active');
-            
-            // Pause audio
-            if (youtubePlayer) {
-                youtubePlayer.pauseVideo();
-            }
-            if (sabotageVideoPlayer) {
-                sabotageVideoPlayer.pauseVideo();
-            }
-        });
-        
-        showRoleBtn.addEventListener('click', revealRole);
-        nextPlayerBtn.addEventListener('click', nextPlayer);
-        
-        // Sabotage button
-        sabotageBtn.addEventListener('click', () => {
-            if (!sabotageActive) {
-                sabotageModal.classList.add('active');
-            }
-        });
-        
-        // Role selector button
-        roleSelectorBtn.addEventListener('click', () => {
-            if (!isRoleRevealed) {
-                revealRole();
-            }
-        });
-        
-        // Sabotage options
-        nairaRoomOption.addEventListener('click', () => {
-            scheduleSabotage('naira');
-        });
-        
-        diningTableOption.addEventListener('click', () => {
-            scheduleSabotage('dining');
-        });
-        
-        // Now button
-        nowBtn.addEventListener('click', () => {
-            sabotageDelayInput.value = 0;
-        });
-        
-        // Cancel sabotage
-        cancelSabotageBtn.addEventListener('click', () => {
-            sabotageModal.classList.remove('active');
-        });
-        
-        // Close timer
-        closeTimerBtn.addEventListener('click', () => {
-            timerContainer.classList.remove('active');
-            sabotageActive = false;
-            sabotageBtn.disabled = false;
-            
-            // Pause audio
-            if (youtubePlayer) {
-                youtubePlayer.pauseVideo();
-            }
-        });
-        
-        // Initialize app
+
+        // Start the app
         init();
     </script>
 </body>
