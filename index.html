@@ -1207,6 +1207,7 @@ By signing below, Guest acknowledges and agrees to all terms and conditions of t
             database.ref('rooms').once('value')
                 .then(snapshot => {
                     const rooms = snapshot.val();
+                    console.log('Rooms loaded:', rooms); // Debug log
                     roomsContainer.innerHTML = '';
                     if (rooms) {
                         Object.keys(rooms).forEach(key => {
@@ -1496,6 +1497,7 @@ By signing below, Guest acknowledges and agrees to all terms and conditions of t
             database.ref(`users/${currentUser.uid}/bookings`).once('value')
                 .then(snapshot => {
                     const bookingIds = snapshot.val();
+                    console.log('Booking IDs loaded:', bookingIds); // Debug log
                     if (bookingIds) {
                         const promises = Object.keys(bookingIds).map(bookingId => {
                             return database.ref(`bookings/${bookingId}`).once('value');
@@ -1503,6 +1505,7 @@ By signing below, Guest acknowledges and agrees to all terms and conditions of t
                         Promise.all(promises)
                             .then(snapshots => {
                                 const bookings = snapshots.map(snap => snap.val());
+                                console.log('Bookings loaded:', bookings); // Debug log
                                 displayBookings(bookings);
                             });
                     } else {
